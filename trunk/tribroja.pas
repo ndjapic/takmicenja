@@ -3,7 +3,7 @@ var
   s: string;
 begin
   readln(x,y,z);
-  if x<y then begin
+  if x<y then
     if y<z then begin
       a:=x; b:=y; c:=z
     end else if x<z then begin
@@ -11,7 +11,7 @@ begin
     end else begin
       a:=z; b:=x; c:=y
     end
-  end else if x<z then begin
+  else if x<z then begin
       a:=y; b:=x; c:=z
   end else if y<z then begin
       a:=y; b:=z; c:=x
