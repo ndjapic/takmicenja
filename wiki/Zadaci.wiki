@@ -1,0 +1,17 @@
+#summary One-sentence summary of this page.
+#labels Featured,Phase-Requirements
+
+Намена ове странице је да на њој буду наведени нови занимљиви задаци из програмирања који ће бити решавани у оквиру овог пројекта.
+
+= Introduction =
+
+Add your content here.
+
+[http://takmicenja.googlecode.com/ Адреса овог пројекта].
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
