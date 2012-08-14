@@ -3,20 +3,20 @@
 <title> Fibonacci sequence </title>
 <script>
 
-// fibpair(n) returns the size of nth canvas
-  var fibpair = function(n) {
+// fibPair(n) returns the size of nth canvas
+  var fibPair = function(n) {
     if(n===1) return {x: 0, y: 1}
     else {
-      var f = fibpair(n-1)
+      var f = fibPair(n-1)
       return f = {x: f.y, y: f.x + f.y}
     }
   }
 
-// fibnum(n) returns larger side of nth canvas.
-var fibnum = function(n) return n<1 ? 0 : fibpair(n).y
+// fib(n) returns larger side of nth canvas.
+  var fib = function(n){ return n<1 ? 0 : fibPair(n).y }
 
-var n = Number(prompt("Please enter a number.", "50"))
-alert(n + "th Fibonacci number is " + fibnum(n))
+  var n = Number(prompt("Please enter a number.", "50"))
+  alert(n + "th Fibonacci number is " + fib(n))
 
 </script>
 </head>
