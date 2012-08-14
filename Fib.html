@@ -1,0 +1,38 @@
+<html>
+<head>
+<title> Fibonacci sequence </title>
+<script>
+
+// fibpair(n) returns the size of nth canvas
+var fibpair = function(n)
+    if(n===1) return {x: 0, y: 1}
+    else {
+        var f = fibpair(n-1)
+//        f.y += f.x
+//        f.x = f.y - f.x
+        return f = {x: f.y, y: f.x + f.y}
+    }
+
+// fibnum(n) returns larger side of nth canvas.
+var fibnum = function(n) return n<1 ? 0 : fibpair(n).y
+
+var n = Number(prompt("Please enter a number.", "50"))
+alert(n + "th Fibonacci number is " + fibnum(n))
+
+</script>
+</head>
+<body>
+
+<h1> Fibonacci sequence </h1>
+
+<p>When trying to calculate nth number of Fibonacci sequence,
+in order to avoid unnecessary recursive calls or
+extensive memory usage, it helps to imagine painting canvas
+of dimensions x and y that are consequtive Fibonacci numbers.
+The canvas is enlarged in each step by adding a square next to
+its larger side. It is also rotated, in each step, by 90 degrees
+from portrait to landscape orientation. That way canvas shape,
+as it should, slowly approaches golden ratio.</p>
+
+</body>
+</html>
