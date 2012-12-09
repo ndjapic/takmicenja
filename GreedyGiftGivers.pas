@@ -1,42 +1,51 @@
-program gift1('gift1.in','gift1.out');
+program gift1;
 
- var np, i, j, a, b, q, giver, receiver: integer;
- name: string;
- names: array [1..10] of string;
- balances: array [1..10] of integer;
+ var p, g, np, ng, amount, gift: integer;
+  name: string;
+  names: array [1..10] of string;
+  balances: array [1..10] of integer;
+  f: text;
 
  function pin(name: string): integer;
- var i: integer;
+ var p: integer;
  begin
-  i := 0;
-  repeat
-   i := i+1
-  until names[i]=name;
-  pin := i
+  p := 1;
+  while not names[p]=name do p := p+1;
+  pin := p
  end;
- 
+
+ procedure advancebalance(idnum: integer; money: integer);
+ begin
+  balances[idnum] := balances[idnum] + money
+ end;
+
 begin
- readln(np);
- for i := 1 to np do begin
-  readln(names[i]);
-  balances[i] := 0
+ assign(f, 'gift1.in');
+ {$I-}   { disable i/o error checking }
+ reset(f);
+ {$I+}   { enable again i/o error checking - important }
+ readln(f, np);
+ for p := 1 to np do begin
+  readln(f, names[p]);
+  balances[p] := 0
  end;
- for i := 1 to np do begin
-  readln(name);
-  giver := pin(name);
-  read(a); readln(b);
-  if b>0 then begin
-   q := a div b;
-   balances[giver] := balances[giver] - b*q;
-   for j := 1 to b do begin
-    readln(name);
-    receiver := pin(name);
-    balances[receiver] := balances[receiver] + q
+ for p := 1 to np do begin
+  readln(f, name);
+  read(f, amount); readln(f, ng);
+  if ng>0 then begin
+   gift := amount div ng;
+   advancebalance(pin(name), -ng*gift);
+   for g := 1 to ng do begin
+    readln(f, name);
+    advancebalance(pin(name), gift);
    end
   end
  end;
- for i := 1 to np do begin
-  write(names[i]);
-  writeln(balances[i])
- end
+ close(f);
+ assign(f, 'gift1.out');
+ rewrite(f);
+ for p := 1 to np do begin
+  write(f, names[p]); write(f, ' '); writeln(f, balances[p])
+ end;
+ close(f)
 end.
