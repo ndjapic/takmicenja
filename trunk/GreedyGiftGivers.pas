@@ -7,11 +7,11 @@ program gift1;
   f: text;
 
  function pin(name: string): integer;
- var p: integer;
+ var i: integer;
  begin
-  p := 1;
-  while not names[p]=name do p := p+1;
-  pin := p
+  i := 1;
+  while not names[i]=name do i := i+1;
+  pin := i
  end;
 
  procedure advancebalance(idnum: integer; money: integer);
