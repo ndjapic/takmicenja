@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="myFunction()">Sieve</button>
+
+<script>
+var sieve = [false, false];
+function myFunction(){
+  var n = sieve.length; nn = n * n;
+  for(var i = n; i < nn; i++){ sieve.push(true); }
+  for(var p = 0; p < n; p++){
+    if(sieve[p]){
+      for(var m = p+p; m < nn; m += p){ sieve[m] = false; }
+    }
+  }
+  var par = document.body.appendChild(document.createElement('p'));
+  for(var i = n; i < nn; i++){
+    if(sieve[i]){ par.textContent += ' ' + i; }
+  }
+}
+</script>
+
+</body>
+</html>
+
