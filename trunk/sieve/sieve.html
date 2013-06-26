@@ -11,7 +11,9 @@ function myFunction(){
   for(var i = n; i < nn; i++){ sieve.push(true); }
   for(var p = 0; p < n; p++){
     if(sieve[p]){
-      for(var m = p+p; m < nn; m += p){ sieve[m] = false; }
+      for(var m = p * p; m < nn; m += p){
+        sieve[m] = false;
+      }
     }
   }
   var txt = document.body.
