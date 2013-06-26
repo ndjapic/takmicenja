@@ -14,9 +14,11 @@ function myFunction(){
       for(var m = p+p; m < nn; m += p){ sieve[m] = false; }
     }
   }
-  var par = document.body.appendChild(document.createElement('p'));
+  var txt = document.body.
+   appendChild(document.createElement('p')).
+   appendChild(document.createTextNode(''));
   for(var i = n; i < nn; i++){
-    if(sieve[i]){ par.textContent += ' ' + i; }
+    if(sieve[i]){ txt.nodeValue += ' ' + i; }
   }
 }
 </script>
