@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<!--
+  Created using jsbin.com
+  Source can be edited via http://jsbin.com/okegif/1/edit
+-->
+<head>
+  <meta charset=utf-8 />
+  <title>Facebook Pages for Educators</title>
+<style>
+  h1 {
+    text-align: center;
+    color: red;
+    background-color: lightyellow;
+  }
+</style>
+</head>
+<body>
+  <h1>Facebook Pages for Educators</h1>
+  <p>from <a href="https://www.facebook.com/safety/attachment/Facebook%20for%20Educators.pdf">
+    Facebook for Educators Guide</a></p>
+<script>
+var links = [
+"National Geographic Education http://www.facebook.com/natgeoeducation",
+"British Museum http://www.facebook.com/britishmuseum",
+"Girl Up (UN Foundation) http://www.facebook.com/girlup",
+"NASA http://www.facebook.com/NASA",
+"Smithsonian Institution http://www.facebook.com/SmithsonianInstitution",
+"Youth Olympic Games http://www.facebook.com/youtholympicgames",
+"Library of Congress http://www.facebook.com/libraryofcongress",
+"Musee du Louvre http://www.facebook.com/museedulouvre",
+"PBS Kids http://www.facebook.com/PBSKIDS",
+"Kabul Museum http://www.facebook.com/pages/Kabul-Museum/317714056516",
+"Discovery Channel Global Education http://www.facebook.com/DCGEP",
+"Scholastic Teachers http://www.facebook.com/ScholasticTeachers",
+"Facebook in Education http://www.facebook.com/education",
+"Get Schooled Foundation http://www.facebook.com/GetSchooledFoundation",
+"Encyclopaedia Britannica http://www.facebook.com/BRITANNICA",
+"Facebook for Educators http://www.facebook.com/fb4educators"];
+
+function map(array, fn){
+  for(var i in array){ fn(array[i]); }
+}
+
+function reduce(array, value, fn){
+  map(array, function(item){ fn(item, value); });
+  return value;
+}
+
+var li = document.body.appendChild(
+  reduce(
+    links,
+    document.createElement('ol'),
+    function(str, val){
+      var arr = str.split(' ');
+      var a = val.appendChild(
+        document.createElement('li')
+      ).appendChild(
+        document.createElement('a')
+      );
+      a.setAttribute( 'href', arr.pop() );
+      a.appendChild(
+        document.createTextNode(arr.join(' '))
+      );
+    }
+  )
+);
+</script>
+</body>
+</html>
