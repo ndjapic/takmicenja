@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html>
 <!--
   Created using jsbin.com
-  Source can be edited via http://jsbin.com/epukun/1/edit
+  Source can be edited via http://jsbin.com/epukun/2/edit
 -->
 <head>
 <meta charset=utf-8 />
@@ -16,6 +17,9 @@ body {
 h1,h2,h3 {
   text-align: center;
   background: orange;
+}
+p,li,td,caption {
+  border: inset;
 }
 </style>
 </head>
@@ -38,6 +42,9 @@ document.body.onload = function(){
  .appendChild(document.createTextNode('Друга ставка.'))
  .parentNode.parentNode.parentNode
  .appendChild(document.createElement('table'))
+ .appendChild(document.createElement('caption'))
+ .appendChild(document.createTextNode('Наслов табеле'))
+ .parentNode.parentNode
  .appendChild(document.createElement('tr'))
  .appendChild(document.createElement('td'))
  .appendChild(document.createTextNode('Први ред - прва колона.'))
