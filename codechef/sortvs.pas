@@ -8,11 +8,11 @@ type
         x, y, t: integer;
     end;
     permutation = array [1 .. 18] of integer;
-    unvisited: array [1 .. 153] of boolean;
+    unfreed: array [1 .. 153] of boolean;
     vertex = record
         f, g, h, id, hh, prev, next: integer;
         p: permutation;
-        s: unvisited;
+        s: unfreed;
     end;
 var
     tests, n, m, i, j, swaplen, pqlen: integer;
@@ -20,11 +20,12 @@ var
     f, g, h, id, nx: integer;
     p: permutation;
     u, v: vertex;
-    unv: unvisited;
+    unfr: unfreed;
     time: array [1 .. 18, 1 .. 18] of integer;
     swaps: array [1 .. 153] of tswap;
     ht: array [0 .. htsz] of integer;
     pq: array [1 .. pqsz] of vertex;
+    visfalse: array [1 .. 18] of boolean;
 
 function perord(): integer;
 var
@@ -45,27 +46,6 @@ begin
     hash := i mod htsz + 1;
 end;
 
-procedure heapup(i: integer, v: vertex);
-const
-    swloc = 0;
-var
-    j, prev: integer;
-begin
-    j := i div 2;
-    while (j > 0) and (v.f < pq[j].f) do begin
-        prev := ht[pq[j].hh];
-        while pq[prev].nx <> j do prev := pq[prev].nx;
-        if prev = j then begin
-            ht[pq[j].hh] := i;
-        end else
-        pq[i] := pq[j];
-        i := j;
-        j := i div 2;
-    end;
-    reloc();
-    pq[i] := v;
-end;
-
 function heu(): integer;
 var
     cnttime: integer;
@@ -73,7 +53,7 @@ var
     visited: array [1 .. 18] of boolean;
 
 begin
-    for i := 1 to n do visited[i] := false;
+    visited := visfalse;
     cnttime := 0;
     i := 1;
     while i <= n do begin
@@ -93,70 +73,68 @@ begin
     heu := cnttime;
 end;
 
-procedure appendvertex(g, si: integer);
-var
-    v: vertex;
-begin
-    v.g := g;
-    v.h := heu();
-    v.f := g + v.h;
-    v.id := perord();
-    v.hh := hash(v.id);
-    v.si := si;
-    v.nx := ht[v.hh];
-    inc(pqlen);
-    ht[hh] := pqlen;
-    pq[pqlen] := v;
-    heapup(pqlen);
-end;
-
-procedure updatevertex(i, g, si: integer);
-var
-    v: vertex;
-begin
-    v := pq[i];
-    if g < v.g then begin
-        v.g := g;
-        v.f := g + v.h;
-        v.si := si;
-        pq[i] := v;
-        heapup(i);
-    end;
-end;
-
 procedure heappush();
 var
-    i, j: integer;
+    i, j, prev: integer;
+
 begin
     v.id := perord();
     v.hh := hash(id);
     i := ht[v.hh];
 
-    if i = colisionfree then begin
+    if i = 0 then begin
         inc(pqlen);
         i := pqlen;
         ht[v.hh] := i;
-        v.prev := colisionfree;
-        v.next := colisionfree;
+        v.prev := 0;
+        v.next := 0;
+        v.s := unfr;
+        v.s[si] := false;
     end else begin
         repeat
             v.prev := i;
             i := pq[i].next;
-        until (i = colisionfree) or (pq[i].id = id);
-        if i = colisionfree then begin
+        until (i = 0) or (pq[i].id = v.id);
+        if i = 0 then begin
             inc(pqlen);
             i := pqlen;
             pq[v.prev].next := i;
-            v.next := colisionfree;
+            v.next := 0;
+            v.s := unfr;
+            v.s[si] := false;
+        end else if v.g < pq[i].g then begin
+            pq[i].g := v.g;
+            v := pq[i];
+            v.s[si] := false;
         end else begin
             v := pq[i];
         end;
     end;
 
     if v.s[si] then begin
-        v.s[si] := false;
+        pq[i].s[si] := false;
+    end else begin
         v.h := heu();
         v.f := v.g + v.h;
+        j := i div 2;
+        while (j > 0) and (v.f < pq[j].f) do begin
+            prev := pq[j].prev;
+            if prev = 0 then
+                ht[pq[j].hh] := i
+            else
+                pq[prev].next := i;
+            next := pq[j].next;
+            if next <> 0 then pq[next].prev := i;
+            pq[i] := pq[j];
+            i := j;
+            j := i div 2;
+        end;
+        if v.prev = 0 then
+            ht[v.hh] := i
+        else
+            pq[v.prev].next := i;
+        if v.next <> 0 then pq[v.next].prev := i;
+        pq[i] := v;
     end;
 
 end;
@@ -165,9 +143,12 @@ function notreached(): boolean;
 var
     i: integer;
 begin
+    u := pq[1];
+    v := pq[pqlen];
+    dec(pqlen);
     heappop();
     i := 1;
-    while (i <= n) and (p[i] = i) do inc(i);
+    while (i <= n) and (u.p[i] = i) do inc(i);
     notreached := (i <= n);
 end;
 
@@ -188,7 +169,7 @@ procedure init();
 var
     x, y, t, si, hh: integer;
 begin
-    for hh := 1 to htsz do ht[hh] := colisionfree;
+    for hh := 1 to htsz do ht[hh] := 0;
 
     for x := 1 to n do
     for y := 1 to n do
@@ -213,7 +194,7 @@ begin
         swaps[si].x := x;
         swaps[si].y := y;
         swaps[si].t := time[x, y];
-        unv[si] := true;
+        unfr[si] := true;
     end;
     swaplen := si;
     pqlen := 0;
@@ -224,17 +205,17 @@ begin
     repeat
         readln(n, m);
         for i := 1 to n do read(v.p[i]); readln;
+        for i := 1 to n do visfalse[i] := false;
         init();
 
         u.g := 0;
-        u.s := unv;
+        u.s := unfr;
         heappush();
         si := 0;
         while notreached() do
         for si := 1 to swaplen do
         if u.s[si] then begin
             v := u;
-            v.s := unv;
             swapvases(si);
             heappush();
         end;
