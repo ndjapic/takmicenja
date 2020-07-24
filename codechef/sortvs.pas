@@ -7,7 +7,8 @@ type
         x, y, t: integer;
     end;
     permutation = array [1 .. 18] of integer;
-    unfreed: array [1 .. 153] of boolean;
+    tvisited = array [1 .. 18] of boolean;
+    unfreed = array [1 .. 153] of boolean;
     vertex = record
         f, g, h, id, hh, prev, next: integer;
         p: permutation;
@@ -24,7 +25,7 @@ var
     swaps: array [1 .. 153] of tswap;
     ht: array [0 .. htsz] of integer;
     pq: array [1 .. pqsz] of vertex;
-    visfalse: array [1 .. 18] of boolean;
+    visfalse: tvisited;
 
 function perord(): integer;
 var
@@ -49,7 +50,7 @@ function heu(): integer;
 var
     cnttime: integer;
     zerocyc: boolean;
-    visited: array [1 .. 18] of boolean;
+    visited: tvisited;
 
 begin
     visited := visfalse;
@@ -74,7 +75,7 @@ end;
 
 procedure heapup(i: integer);
 var
-    pa: integer;
+    pa, prev, next: integer;
 
 begin
         pa := i div 2;
@@ -123,11 +124,11 @@ end;
 
 procedure heappush();
 var
-    i, pa, prev, next: integer;
+    i, pa: integer;
 
 begin
     v.id := perord();
-    v.hh := hash(id);
+    v.hh := hash(v.id);
     i := ht[v.hh];
 
     if i = 0 then begin
