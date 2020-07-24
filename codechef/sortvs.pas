@@ -2,7 +2,6 @@ program sortvs;
 const
     htsz = 1024 * 1024;
     pqsz = 4096 * 1024;
-    colisionfree = 0;
 type
     tswap = record
         x, y, t: integer;
@@ -17,7 +16,7 @@ type
 var
     tests, n, m, i, j, swaplen, pqlen: integer;
     x, y, t, hh: integer;
-    f, g, h, id, nx: integer;
+    si: integer;
     p: permutation;
     u, v: vertex;
     unfr: unfreed;
@@ -73,9 +72,58 @@ begin
     heu := cnttime;
 end;
 
+procedure heapup(i: integer);
+var
+    pa: integer;
+
+begin
+        pa := i div 2;
+        while (pa > 0) and (v.f < pq[pa].f) do begin
+            prev := pq[pa].prev;
+            if prev = 0 then
+                ht[pq[pa].hh] := i
+            else
+                pq[prev].next := i;
+            next := pq[pa].next;
+            if next <> 0 then pq[next].prev := i;
+            pq[i] := pq[pa];
+            i := pa;
+            pa := i div 2;
+        end;
+        if v.prev = 0 then
+            ht[v.hh] := i
+        else
+            pq[v.prev].next := i;
+        if v.next <> 0 then pq[v.next].prev := i;
+        pq[i] := v;
+end;
+
+procedure heapdn(i: integer);
+var
+    ch, ri: integer;
+    w: vertex;
+
+begin
+    ch := 2 * i;
+    while ch <= pqlen do begin
+        ri := ch + 1;
+        if (ri <= pqlen) and (pq[ri].f < pq[ch].f) then ch := ri;
+        w := pq[ch];
+        if w.prev = 0 then
+            ht[w.hh] := i
+        else
+            pq[w.prev].next := i;
+        if w.next <> 0 then pq[w.next].prev := i;
+        pq[i] := w;
+        i := ch;
+        ch := 2 * i;
+    end;
+    heapup(i);
+end;
+
 procedure heappush();
 var
-    i, j, prev: integer;
+    i, pa, prev, next: integer;
 
 begin
     v.id := perord();
@@ -116,40 +164,30 @@ begin
     end else begin
         v.h := heu();
         v.f := v.g + v.h;
-        j := i div 2;
-        while (j > 0) and (v.f < pq[j].f) do begin
-            prev := pq[j].prev;
-            if prev = 0 then
-                ht[pq[j].hh] := i
-            else
-                pq[prev].next := i;
-            next := pq[j].next;
-            if next <> 0 then pq[next].prev := i;
-            pq[i] := pq[j];
-            i := j;
-            j := i div 2;
-        end;
-        if v.prev = 0 then
-            ht[v.hh] := i
-        else
-            pq[v.prev].next := i;
-        if v.next <> 0 then pq[v.next].prev := i;
-        pq[i] := v;
+        heapup(i);
     end;
 
 end;
 
-function notreached(): boolean;
+function heappop(): boolean;
 var
     i: integer;
+
 begin
     u := pq[1];
+    if u.prev = 0 then
+        ht[u.hh] := u.next
+    else
+        pq[u.prev].next := u.next;
+    if u.next <> 0 then pq[u.next].prev := u.prev;
+
     v := pq[pqlen];
     dec(pqlen);
-    heappop();
+    heapdn(1);
+
     i := 1;
     while (i <= n) and (u.p[i] = i) do inc(i);
-    notreached := (i <= n);
+    heappop := (i <= n);
 end;
 
 procedure swapvases(si: integer);
@@ -170,6 +208,7 @@ var
     x, y, t, si, hh: integer;
 begin
     for hh := 1 to htsz do ht[hh] := 0;
+    for i := 1 to n do visfalse[i] := false;
 
     for x := 1 to n do
     for y := 1 to n do
@@ -205,14 +244,13 @@ begin
     repeat
         readln(n, m);
         for i := 1 to n do read(v.p[i]); readln;
-        for i := 1 to n do visfalse[i] := false;
         init();
 
         u.g := 0;
         u.s := unfr;
         heappush();
         si := 0;
-        while notreached() do
+        while heappop() do
         for si := 1 to swaplen do
         if u.s[si] then begin
             v := u;
