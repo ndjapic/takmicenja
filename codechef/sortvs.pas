@@ -15,10 +15,9 @@ type
         s: unfreed;
     end;
 var
-    tests, n, m, i, j, swaplen, pqlen: integer;
+    tests, n, m, i, swaplen, pqlen: integer;
     x, y, t, hh: integer;
     si: integer;
-    p: permutation;
     u, v: vertex;
     unfr: unfreed;
     time: array [1 .. 18, 1 .. 18] of integer;
@@ -33,9 +32,9 @@ var
 begin
     id := 0;
     for i := 1 to n - 1 do begin
-        inc(id, p[i] - 1);
+        inc(id, v.p[i] - 1);
         for j := 1 to i - 1 do
-            if p[j] <= p[i] then dec(id);
+            if v.p[j] <= v.p[i] then dec(id);
         id := id * (n - i);
     end;
     perord := id + 1;
@@ -124,7 +123,7 @@ end;
 
 procedure heappush();
 var
-    i, pa: integer;
+    i: integer;
 
 begin
     v.id := perord();
