@@ -8,7 +8,7 @@ type
     end;
     permutation = array [1 .. 18] of integer;
     tvisited = array [1 .. 18] of boolean;
-    unfreed = array [1 .. 153] of boolean;
+    unfreed = array [0 .. 153] of boolean;
     vertex = record
         f, g, h, id, hh, prev, next: integer;
         p: permutation;
@@ -72,53 +72,46 @@ begin
     heu := cnttime;
 end;
 
-procedure heapup(i: integer);
+procedure heapmove(source, destination: integer);
 var
-    pa, prev, next: integer;
-
+    v: vertex;
 begin
-        pa := i div 2;
-        while (pa > 0) and (v.f < pq[pa].f) do begin
-            prev := pq[pa].prev;
-            if prev = 0 then
-                ht[pq[pa].hh] := i
-            else
-                pq[prev].next := i;
-            next := pq[pa].next;
-            if next <> 0 then pq[next].prev := i;
-            pq[i] := pq[pa];
-            i := pa;
-            pa := i div 2;
-        end;
-        if v.prev = 0 then
-            ht[v.hh] := i
-        else
-            pq[v.prev].next := i;
-        if v.next <> 0 then pq[v.next].prev := i;
-        pq[i] := v;
+    v := pq[source];
+    if v.prev = 0 then
+        ht[v.hh] := destination
+    else
+        pq[v.prev].next := destination;
+    v.next := pq[source].next;
+    if v.next <> 0 then pq[v.next].prev := destination;
+    pq[destination] := v;
 end;
 
-procedure heapdn(i: integer);
+function heapup(spot, priority: integer): integer;
+var
+    pa: integer;
+begin
+    pa := spot div 2;
+    while (pa > 0) and (pq[pa].f > priority) do begin
+        heapmove(pa, spot);
+        spot := pa;
+        pa := spot div 2;
+    end;
+    heapup := spot;
+end;
+
+function heapdn(spot: integer): integer;
 var
     ch, ri: integer;
-    w: vertex;
-
 begin
-    ch := 2 * i;
+    ch := 2 * spot;
     while ch <= pqlen do begin
         ri := ch + 1;
         if (ri <= pqlen) and (pq[ri].f < pq[ch].f) then ch := ri;
-        w := pq[ch];
-        if w.prev = 0 then
-            ht[w.hh] := i
-        else
-            pq[w.prev].next := i;
-        if w.next <> 0 then pq[w.next].prev := i;
-        pq[i] := w;
-        i := ch;
-        ch := 2 * i;
+        heapmove(ch, spot);
+        spot := ch;
+        ch := 2 * spot;
     end;
-    heapup(i);
+    heapdn := spot;
 end;
 
 procedure heappush();
@@ -126,6 +119,10 @@ var
     i: integer;
 
 begin
+    v.f := - 1;
+    v.prev := 0;
+    v.next := 0;
+    v.s := unfr;
     v.id := perord();
     v.hh := hash(v.id);
     i := ht[v.hh];
@@ -133,46 +130,38 @@ begin
     if i = 0 then begin
         inc(pqlen);
         i := pqlen;
-        ht[v.hh] := i;
-        v.prev := 0;
-        v.next := 0;
-        v.s := unfr;
-        v.s[si] := false;
+        {ht[v.hh] := i;}
+        v.h := heu();
     end else begin
-        repeat
+        while (i <> 0) and (pq[i].id <> v.id) do begin
             v.prev := i;
             i := pq[i].next;
-        until (i = 0) or (pq[i].id = v.id);
+        end;
         if i = 0 then begin
             inc(pqlen);
             i := pqlen;
-            pq[v.prev].next := i;
-            v.next := 0;
-            v.s := unfr;
-            v.s[si] := false;
+            {pq[v.prev].next := i;}
+            v.h := heu();
         end else if v.g < pq[i].g then begin
             pq[i].g := v.g;
             v := pq[i];
-            v.s[si] := false;
+            v.f := - 1;
         end else begin
-            v := pq[i];
+            pq[i].s[si] := false;
         end;
     end;
 
-    if v.s[si] then begin
-        pq[i].s[si] := false;
-    end else begin
-        v.h := heu();
+    if v.f = - 1 then begin
+        v.s[si] := false;
         v.f := v.g + v.h;
-        heapup(i);
+        pq[i] := v;
+        heapmove(i, pqlen + 1);
+        heapmove( pqlen + 1, heapup(i, v.f) );
     end;
 
 end;
 
-function heappop(): boolean;
-var
-    i: integer;
-
+procedure heappop();
 begin
     u := pq[1];
     if u.prev = 0 then
@@ -181,13 +170,19 @@ begin
         pq[u.prev].next := u.next;
     if u.next <> 0 then pq[u.next].prev := u.prev;
 
-    v := pq[pqlen];
     dec(pqlen);
-    heapdn(1);
+    if pqlen > 0 then
+        heapmove( pqlen + 1, heapup( heapdn(1), pq[pqlen + 1].f ) );
+end;
 
+function isnotreached(): boolean;
+var
+    i: integer;
+begin
+    heappop();
     i := 1;
     while (i <= n) and (u.p[i] = i) do inc(i);
-    heappop := (i <= n);
+    isnotreached := (i <= n);
 end;
 
 procedure swapvases(si: integer);
@@ -200,7 +195,6 @@ begin
     v.p[s.x] := v.p[s.y];
     v.p[s.y] := tmp;
     inc(v.g, s.t);
-    v.s[si] := false;
 end;
 
 procedure init();
@@ -246,11 +240,10 @@ begin
         for i := 1 to n do read(v.p[i]); readln;
         init();
 
-        u.g := 0;
-        u.s := unfr;
-        heappush();
+        v.g := 0;
         si := 0;
-        while heappop() do
+        heappush();
+        while isnotreached() do
         for si := 1 to swaplen do
         if u.s[si] then begin
             v := u;
