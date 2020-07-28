@@ -116,47 +116,59 @@ end;
 
 procedure heappush();
 var
-    i: integer;
-
+    i, spot, source: integer;
 begin
-    v.f := - 1;
-    v.prev := 0;
-    v.next := 0;
-    v.s := unfr;
     v.id := perord();
     v.hh := hash(v.id);
     i := ht[v.hh];
 
     if i = 0 then begin
-        inc(pqlen);
-        i := pqlen;
-        {ht[v.hh] := i;}
         v.h := heu();
+        inc(pqlen);
+        spot := pqlen;
+        source := pqlen + 1;
+        ht[v.hh] := source;
+        v.prev := 0;
+        v.next := 0;
+        v.f := - 1;
+        v.s := unfr;
+        v.s[si] := false;
     end else begin
         while (i <> 0) and (pq[i].id <> v.id) do begin
             v.prev := i;
             i := pq[i].next;
         end;
         if i = 0 then begin
-            inc(pqlen);
-            i := pqlen;
-            {pq[v.prev].next := i;}
             v.h := heu();
+            inc(pqlen);
+            spot := pqlen;
+            source := pqlen + 1;
+            pq[v.prev].next := source;
+            v.next := 0;
+            v.f := - 1;
+            v.s := unfr;
+            v.s[si] := false;
         end else if v.g < pq[i].g then begin
             pq[i].g := v.g;
             v := pq[i];
             v.f := - 1;
+            v.s[si] := false;
+            spot := i;
+            source := pqlen + 1;
+            if v.prev = 0 then
+                ht[v.hh] := source
+            else
+                pq[v.prev].next := source;
+            if v.next <> 0 then pq[v.next].prev := source;
         end else begin
             pq[i].s[si] := false;
         end;
     end;
 
     if v.f = - 1 then begin
-        v.s[si] := false;
-        v.f := n * v.g + v.h;
-        pq[i] := v;
-        heapmove(i, pqlen + 1);
-        heapmove( pqlen + 1, heapup(i, v.f) );
+        v.f := 2 * v.g + v.h;
+        pq[source] := v;
+        heapmove( source, heapup(spot, v.f) );
     end;
 
 end;
@@ -195,16 +207,15 @@ begin
     for i := 1 to n do visfalse[i] := false;
 
     for x := 1 to n do
-    for y := 1 to n do
-    if x = y then
-        time[x, y] := 1
-    else
+    for y := x + 1 to n do
         time[x, y] := 60;
 
     while m > 0 do begin
         readln(x, y);
-        time[x, y] := 1;
-        time[y, x] := 1;
+        if x < y then
+            time[x, y] := 1
+        else if y < x then
+            time[y, x] := 1;
         dec(m);
     end;
 
