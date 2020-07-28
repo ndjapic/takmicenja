@@ -37,12 +37,12 @@ begin
             if v.p[j] <= v.p[i] then dec(id);
         id := id * (n - i);
     end;
-    perord := id + 1;
+    perord := id;
 end;
 
 function hash(i: integer): integer;
 begin
-    hash := i mod htsz + 1;
+    hash := i mod htsz;
 end;
 
 function heu(): integer;
@@ -153,7 +153,7 @@ begin
 
     if v.f = - 1 then begin
         v.s[si] := false;
-        v.f := v.g + v.h;
+        v.f := n * v.g + v.h;
         pq[i] := v;
         heapmove(i, pqlen + 1);
         heapmove( pqlen + 1, heapup(i, v.f) );
@@ -161,7 +161,7 @@ begin
 
 end;
 
-procedure heappop();
+function heappop(): boolean;
 begin
     u := pq[1];
     if u.prev = 0 then
@@ -169,20 +169,10 @@ begin
     else
         pq[u.prev].next := u.next;
     if u.next <> 0 then pq[u.next].prev := u.prev;
-
     dec(pqlen);
     if pqlen > 0 then
         heapmove( pqlen + 1, heapup( heapdn(1), pq[pqlen + 1].f ) );
-end;
-
-function isnotreached(): boolean;
-var
-    i: integer;
-begin
-    heappop();
-    i := 1;
-    while (i <= n) and (u.p[i] = i) do inc(i);
-    isnotreached := (i <= n);
+    heappop := (u.id <> 0);
 end;
 
 procedure swapvases(si: integer);
@@ -199,7 +189,7 @@ end;
 
 procedure init();
 var
-    x, y, t, si, hh: integer;
+    i, x, y, t, si, hh: integer;
 begin
     for hh := 1 to htsz do ht[hh] := 0;
     for i := 1 to n do visfalse[i] := false;
@@ -243,7 +233,7 @@ begin
         v.g := 0;
         si := 0;
         heappush();
-        while isnotreached() do
+        while heappop() do
         for si := 1 to swaplen do
         if u.s[si] then begin
             v := u;
