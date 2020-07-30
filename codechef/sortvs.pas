@@ -200,7 +200,7 @@ end;
 
 function heappop(): boolean;
 var
-    i: integer;
+    leaf, f: integer;
 begin
     u := pq[1];
     {for i := 1 to n do write(u.p[i], ' '); writeln('poped');}
@@ -209,9 +209,12 @@ begin
     else
         pq[u.prev].next := u.next;
     if u.next <> 0 then pq[u.next].prev := u.prev;
+    f := pq[pqlen].f;
+    leaf := heapdn(1);
     dec(pqlen);
-    if pqlen > 0 then
-        heapmove( pqlen + 1, heapup( heapdn(1), pq[pqlen + 1].f ) );
+    if leaf <= pqlen then begin
+        heapmove( pqlen + 1, heapup( leaf, f ) );
+    end;
     heappop := (u.id <> 0);
 end;
 
