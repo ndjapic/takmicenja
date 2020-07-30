@@ -41,8 +41,8 @@ begin
             1006: write('destination overflow');
         end;
         writeln('.');
-    end else
-        {writeln(errcode, ' OK')};
+    end {else
+        writeln(errcode, ' OK')};
 end;
 
 function perord(): integer;
@@ -148,55 +148,49 @@ var
     i, spot, source: integer;
 begin
     assert(1002, pqsz - pqlen > 3);
-    for i := 1 to n do write(v.p[i], ' '); writeln('pushed');
-    v.f := - 1;
+    {for i := 1 to n do write(v.p[i], ' '); writeln('pushed');}
     v.id := perord();
     v.hh := hash(v.id);
     i := ht[v.hh];
+    v.prev := 0;
 
-    if i = 0 then begin
-        v.h := heu();
-        inc(pqlen);
-        spot := pqlen;
-        source := pqlen + 1;
-        ht[v.hh] := source;
-        v.prev := 0;
-        v.next := 0;
-    end else begin
-        v.prev := 0;
+    if i <> 0 then begin
         while (i <> 0) and (pq[i].id <> v.id) do begin
             v.prev := i;
             i := pq[i].next;
         end;
-        if i = 0 then begin
-            v.h := heu();
-            inc(pqlen);
-            spot := pqlen;
-            source := pqlen + 1;
-            assert(1001, v.prev <> 0);
-            pq[v.prev].next := source;
-            v.next := 0;
-        end else if v.g < pq[i].g then begin
-            pq[i].g := v.g;
-            heapget(i);
-            v.f := - 1;
-            v.s[si] := false;
-            spot := i;
-            source := pqlen + 1;
-            if v.prev = 0 then
-                ht[v.hh] := source
-            else
-                pq[v.prev].next := source;
-            if v.next <> 0 then pq[v.next].prev := source;
-        end else begin
-            pq[i].s[si] := false;
+        if i <> 0 then begin
+            if v.g < pq[i].g then begin
+                pq[i].g := v.g;
+                heapget(i);
+                v.f := - 1;
+                v.s[si] := false;
+                spot := i;
+            end else begin
+                pq[i].s[si] := false;
+                v.f := pq[i].f;
+            end;
         end;
     end;
 
+    if i = 0 then begin
+        inc(pqlen);
+        spot := pqlen;
+        v.next := 0;
+        v.h := heu();
+        v.f := - 1;
+    end;
+
     if v.f = - 1 then begin
+        source := pqlen + 1;
+        if v.prev = 0 then
+            ht[v.hh] := source
+        else
+            pq[v.prev].next := source;
+        if v.next <> 0 then pq[v.next].prev := source;
         {v.f := v.id;}
         v.f := 2 * v.g + v.h;
-        writeln('heapset ', source);
+        {writeln('heapset ', source);}
         heapset(source);
         heapmove( source, heapup(spot, v.f) );
     end;
@@ -208,7 +202,7 @@ var
     i: integer;
 begin
     u := pq[1];
-    for i := 1 to n do write(u.p[i], ' '); writeln('poped');
+    {for i := 1 to n do write(u.p[i], ' '); writeln('poped');}
     if u.prev = 0 then
         ht[u.hh] := u.next
     else
