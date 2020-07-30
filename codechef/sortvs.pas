@@ -2,13 +2,15 @@ program sortvs;
 const
     htsz = 1024 * 1024;
     pqsz = 4096 * 1024;
+    bottime = 1;
+    humtime = 60;
 type
     tswap = record
         x, y, t: integer;
     end;
     permutation = array [1 .. 18] of integer;
     tvisited = array [1 .. 18] of boolean;
-    unfreed = array [0 .. 153] of boolean;
+    unfreed = array [1 .. 153] of boolean;
     vertex = record
         f, g, h, id, hh, prev, next: integer;
         p: permutation;
@@ -26,6 +28,23 @@ var
     pq: array [1 .. pqsz] of vertex;
     visfalse: tvisited;
 
+procedure assert(errcode: integer; condition: boolean);
+begin
+    if not condition then begin
+        write('Error ', errcode, ': ');
+        case errcode of
+            1001: write('v.prev = 0');
+            1002: write('heap overflow');
+            1003: write('source not positive');
+            1004: write('source overflow');
+            1005: write('destination not positive');
+            1006: write('destination overflow');
+        end;
+        writeln('.');
+    end else
+        {writeln(errcode, ' OK')};
+end;
+
 function perord(): integer;
 var
     i, j, id: integer;
@@ -40,9 +59,9 @@ begin
     perord := id;
 end;
 
-function hash(i: integer): integer;
+function hash(id: integer): integer;
 begin
-    hash := i mod htsz;
+    hash := id mod htsz;
 end;
 
 function heu(): integer;
@@ -50,7 +69,6 @@ var
     cnttime: integer;
     zerocyc: boolean;
     visited: tvisited;
-
 begin
     visited := visfalse;
     cnttime := 0;
@@ -59,7 +77,7 @@ begin
         zerocyc := true;
         while not visited[i] do begin
             visited[i] := true;
-            if time[i, v.p[i]] = 1 then begin
+            if time[i, v.p[i]] = humtime then begin
                 if zerocyc then
                     zerocyc := false
                 else
@@ -69,21 +87,32 @@ begin
         end;
         inc(i);
     end;
-    heu := cnttime;
+    heu := cnttime * humtime;
+end;
+
+procedure heapget(source: integer);
+begin
+    assert(1003, source > 0);
+    assert(1004, source <= pqsz);
+    v := pq[source];
+end;
+
+procedure heapset(destination: integer);
+begin
+    assert(1005, destination > 0);
+    assert(1006, destination < pqsz);
+    pq[destination] := v;
 end;
 
 procedure heapmove(source, destination: integer);
-var
-    v: vertex;
 begin
-    v := pq[source];
+    heapget(source);
     if v.prev = 0 then
         ht[v.hh] := destination
     else
         pq[v.prev].next := destination;
-    v.next := pq[source].next;
     if v.next <> 0 then pq[v.next].prev := destination;
-    pq[destination] := v;
+    heapset(destination);
 end;
 
 function heapup(spot, priority: integer): integer;
@@ -118,6 +147,9 @@ procedure heappush();
 var
     i, spot, source: integer;
 begin
+    assert(1002, pqsz - pqlen > 3);
+    for i := 1 to n do write(v.p[i], ' '); writeln('pushed');
+    v.f := - 1;
     v.id := perord();
     v.hh := hash(v.id);
     i := ht[v.hh];
@@ -130,10 +162,8 @@ begin
         ht[v.hh] := source;
         v.prev := 0;
         v.next := 0;
-        v.f := - 1;
-        v.s := unfr;
-        v.s[si] := false;
     end else begin
+        v.prev := 0;
         while (i <> 0) and (pq[i].id <> v.id) do begin
             v.prev := i;
             i := pq[i].next;
@@ -143,14 +173,12 @@ begin
             inc(pqlen);
             spot := pqlen;
             source := pqlen + 1;
+            assert(1001, v.prev <> 0);
             pq[v.prev].next := source;
             v.next := 0;
-            v.f := - 1;
-            v.s := unfr;
-            v.s[si] := false;
         end else if v.g < pq[i].g then begin
             pq[i].g := v.g;
-            v := pq[i];
+            heapget(i);
             v.f := - 1;
             v.s[si] := false;
             spot := i;
@@ -166,16 +194,21 @@ begin
     end;
 
     if v.f = - 1 then begin
+        {v.f := v.id;}
         v.f := 2 * v.g + v.h;
-        pq[source] := v;
+        writeln('heapset ', source);
+        heapset(source);
         heapmove( source, heapup(spot, v.f) );
     end;
 
 end;
 
 function heappop(): boolean;
+var
+    i: integer;
 begin
     u := pq[1];
+    for i := 1 to n do write(u.p[i], ' '); writeln('poped');
     if u.prev = 0 then
         ht[u.hh] := u.next
     else
@@ -196,6 +229,8 @@ begin
     tmp := v.p[s.x];
     v.p[s.x] := v.p[s.y];
     v.p[s.y] := tmp;
+    v.s := unfr;
+    v.s[si] := false;
     inc(v.g, s.t);
 end;
 
@@ -203,19 +238,19 @@ procedure init();
 var
     i, x, y, t, si, hh: integer;
 begin
-    for hh := 1 to htsz do ht[hh] := 0;
+    for hh := 0 to htsz do ht[hh] := 0;
     for i := 1 to n do visfalse[i] := false;
 
     for x := 1 to n do
     for y := x + 1 to n do
-        time[x, y] := 60;
+        time[x, y] := humtime;
 
     while m > 0 do begin
         readln(x, y);
         if x < y then
-            time[x, y] := 1
+            time[x, y] := bottime
         else if y < x then
-            time[y, x] := 1;
+            time[y, x] := bottime;
         dec(m);
     end;
 
@@ -223,7 +258,7 @@ begin
     for t := 0 to 1 do
     for x := 1 to n do
     for y := x + 1 to n do
-    if time[x, y] = 59 * t + 1 then begin
+    if time[x, y] = humtime * t + bottime * (1 - t) then begin
         inc(si);
         swaps[si].x := x;
         swaps[si].y := y;
@@ -242,7 +277,7 @@ begin
         init();
 
         v.g := 0;
-        si := 0;
+        v.s := unfr;
         heappush();
         while heappop() do
         for si := 1 to swaplen do
@@ -252,7 +287,7 @@ begin
             heappush();
         end;
 
-        writeln(v.g div 60);
+        writeln(v.g div humtime);
 
         dec(tests);
     until tests = 0;
