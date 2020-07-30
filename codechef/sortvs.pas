@@ -106,13 +106,13 @@ end;
 
 procedure heapmove(source, destination: integer);
 begin
-    heapget(source);
+    v := pq[source];
     if v.prev = 0 then
         ht[v.hh] := destination
     else
         pq[v.prev].next := destination;
     if v.next <> 0 then pq[v.next].prev := destination;
-    heapset(destination);
+    pq[destination] := v;
 end;
 
 function heapup(spot, priority: integer): integer;
@@ -145,7 +145,7 @@ end;
 
 procedure heappush();
 var
-    i, spot, source: integer;
+    i, source: integer;
 begin
     assert(1002, pqsz - pqlen > 3);
     {for i := 1 to n do write(v.p[i], ' '); writeln('pushed');}
@@ -162,10 +162,10 @@ begin
         if i <> 0 then begin
             if v.g < pq[i].g then begin
                 pq[i].g := v.g;
-                heapget(i);
-                v.f := - 1;
+                {heapget(i);}
+                v := pq[i];
                 v.s[si] := false;
-                spot := i;
+                v.f := - 1;
             end else begin
                 pq[i].s[si] := false;
                 v.f := pq[i].f;
@@ -175,7 +175,7 @@ begin
 
     if i = 0 then begin
         inc(pqlen);
-        spot := pqlen;
+        i := pqlen;
         v.next := 0;
         v.h := heu();
         v.f := - 1;
@@ -189,10 +189,11 @@ begin
             pq[v.prev].next := source;
         if v.next <> 0 then pq[v.next].prev := source;
         {v.f := v.id;}
-        v.f := 2 * v.g + v.h;
-        {writeln('heapset ', source);}
-        heapset(source);
-        heapmove( source, heapup(spot, v.f) );
+        v.f := v.g + v.h;
+        {writeln('heapset ', source);
+        heapset(source);}
+        pq[source] := v;
+        heapmove( source, heapup(i, v.f) );
     end;
 
 end;
