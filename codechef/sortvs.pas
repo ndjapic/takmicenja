@@ -1,14 +1,14 @@
 program sortvs;
 const
     htsz = 1024 * 1024;
-    pqsz = 4096 * 1024;
+    pqsz = 1024 * 1024 * 16;
 type
     tswap = record
         x, y, t: integer;
     end;
-    permutation = array [1 .. 18] of integer;
+    permutation = packed array [1 .. 18] of 1 .. 18;
     tvisited = array [1 .. 18] of boolean;
-    unfreed = array [1 .. 153] of boolean;
+    unfreed = packed array [1 .. 153] of boolean;
     vertex = record
         f, g, h, id, hh, prev, next: integer;
         p: permutation;
