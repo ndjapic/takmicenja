@@ -12,21 +12,34 @@ var
 
 function moddif(a, b: integer): integer;
 begin
-    if a < b then inc(a, bigprime);
-    moddif := a - b;
+    if a < b then
+        moddif := a - b + bigprime
+    else
+        moddif := a - b;
 end;
 
 function sumsqr(n: integer): integer;
 var
-    triangular, oddnum: integer;
+    n1, n2: integer;
 begin
-    triangular := n * (n + 1) div 2;
-    if triangular mod 3 = 0 then begin
-        triangular := triangular div 3;
-        oddnum := 2 * n + 1;
-    end else
-        oddnum := (2 * n + 1) div 3;
-    sumsqr := triangular mod bigprime * oddnum mod bigprime;
+    n1 := n + 1;
+    n2 := n + n1;
+
+    if odd(n) then
+        n1 := n1 div 2
+    else
+        n := n div 2;
+
+    if n mod 3 = 0 then
+        n := n div 3
+    else if n1 mod 3 = 0 then
+        n1 := n1 div 3
+    else
+        n2 := n2 div 3;
+
+    n1 := (n1 mod bigprime) * (n mod bigprime);
+    n2 := (n2 mod bigprime) * (n1 mod bigprime);
+    sumsqr := (n2 mod bigprime);
 end;
 
 function iginv(n: integer): integer;
@@ -63,7 +76,8 @@ begin
             sumsqr(sg[k]),
             moddif(
                 sumsqr(val),
-                r * sqr(val) mod bigprime
+                sqr(val mod bigprime)
+                mod bigprime * r mod bigprime
             )
         )
     );
