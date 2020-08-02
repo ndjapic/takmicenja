@@ -18,28 +18,24 @@ begin
         moddif := a - b;
 end;
 
+function modmul(a, b: integer): integer;
+begin
+    modmul := a * b mod bigprime;
+end;
+
 function sumsqr(n: integer): integer;
 var
     n1, n2: integer;
 begin
-    n1 := n + 1;
-    n2 := n + n1;
+    n1 := n * (n + 1) div 2;
+    n2 := 2 * n + 1;
 
-    if odd(n) then
-        n1 := n1 div 2
-    else
-        n := n div 2;
-
-    if n mod 3 = 0 then
-        n := n div 3
-    else if n1 mod 3 = 0 then
+    if n1 mod 3 = 0 then
         n1 := n1 div 3
     else
         n2 := n2 div 3;
 
-    n1 := (n1 mod bigprime) * (n mod bigprime);
-    n2 := (n2 mod bigprime) * (n1 mod bigprime);
-    sumsqr := (n2 mod bigprime);
+    sumsqr := modmul(n1, n2);
 end;
 
 function iginv(n: integer): integer;
@@ -73,11 +69,10 @@ begin
     s2gfun := moddif(
         s2g[k],
         moddif(
-            sumsqr(sg[k]),
+            modmul(sumsqr(sg[k]), k),
             moddif(
-                sumsqr(val),
-                sqr(val mod bigprime)
-                mod bigprime * r mod bigprime
+                modmul(sumsqr(val), k),
+                modmul(sqr(val), r)
             )
         )
     );
@@ -98,10 +93,12 @@ begin
         g[i] := 1 + g[ i - g[g[i-1]] ];
         ig[i] := ig[i-1] + i * g[i];
         sg[i] := sg[i-1] + g[i];
-        s2g[i] := ( s2g[i-1] + i * moddif(
-            sumsqr(sg[i]),
-            sumsqr(sg[i-1])
-        ) ) mod bigprime;
+        s2g[i] := (
+            s2g[i-1] + i * moddif(
+                sumsqr(sg[i]),
+                sumsqr(sg[i-1])
+            )
+        ) mod bigprime;
     end;
     iglen := i;
 
