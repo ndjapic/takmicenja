@@ -5,7 +5,7 @@ const
     ten10 = sqr(ten5);
     bigprime = ten9 + 7;
     igsz = 100 * 100;
-    debug = true;
+    debug = false;
 var
     tcases, n, i, l, r, iglen: integer;
     g, ig, sg, s2g: array [1 .. igsz] of integer;
@@ -55,10 +55,10 @@ begin
         s2gfun := 0
     else begin
         k := iginv(n);
-        s2gfun := (s2g[k] + bigprime - (
+        s2gfun := (s2g[k] + 2 * bigprime - (
             sumsqr(sg[k]) + bigprime -
             sumsqr(sg[k] - (ig[k] - n) div k) +
-            (ig[k] - n) mod k * sqr(sg[k])
+            (ig[k] - n) mod k * sqr(sg[k] - (ig[k] - n) div k)
         ) mod bigprime) mod bigprime;
     end;
 end;
@@ -89,8 +89,8 @@ begin
         inc(i); writeln('ig[ ', i, ' ] = ', ig[i]);
 
         for i := 1 to 9 do begin
-            write('g( ', i, ' ) = ', gfun(i));
-            writeln('  ***  g[ ', i, ' ] = ', g[i]);
+            write('s2g( ', i, ' ) = ', s2gfun(i));
+            writeln('  ***  s2g[ ', i, ' ] = ', s2g[i]);
         end;
 
         i := 1;
