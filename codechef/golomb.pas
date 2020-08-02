@@ -10,6 +10,12 @@ var
     tcases, n, i, l, r, iglen: integer;
     g, ig, sg, s2g: array [1 .. igsz] of integer;
 
+function moddif(a, b: integer): integer;
+begin
+    if a < b then inc(a, bigprime);
+    moddif := a - b;
+end;
+
 function sumsqr(n: integer): integer;
 var
     triangular, oddnum: integer;
@@ -39,28 +45,28 @@ begin
     iginv := lo;
 end;
 
-function gfun(n: integer): integer;
-var
-    k: integer;
+function gfun(n, k: integer): integer;
 begin
-    k := iginv(n);
     gfun := sg[k] - (ig[k] - n) div k;
 end;
 
 function s2gfun(n: integer): integer;
 var
-    k: integer;
+    k, val, r: integer;
 begin
-    if n = 0 then
-        s2gfun := 0
-    else begin
-        k := iginv(n);
-        s2gfun := (s2g[k] + 2 * bigprime - (
-            sumsqr(sg[k]) + bigprime -
-            sumsqr(sg[k] - (ig[k] - n) div k) +
-            (ig[k] - n) mod k * sqr(sg[k] - (ig[k] - n) div k)
-        ) mod bigprime) mod bigprime;
-    end;
+    k := iginv(n);
+    val := gfun(n, k);
+    r := (ig[k] - n) mod k;
+    s2gfun := moddif(
+        s2g[k],
+        moddif(
+            sumsqr(sg[k]),
+            moddif(
+                sumsqr(val),
+                r * sqr(val) mod bigprime
+            )
+        )
+    );
 end;
 
 procedure init();
@@ -78,8 +84,9 @@ begin
         g[i] := 1 + g[ i - g[g[i-1]] ];
         ig[i] := ig[i-1] + i * g[i];
         sg[i] := sg[i-1] + g[i];
-        s2g[i] := ( s2g[i-1] + i * (
-            sumsqr(sg[i]) + bigprime - sumsqr(sg[i-1])
+        s2g[i] := ( s2g[i-1] + i * moddif(
+            sumsqr(sg[i]),
+            sumsqr(sg[i-1])
         ) ) mod bigprime;
     end;
     iglen := i;
@@ -96,7 +103,7 @@ begin
         i := 1;
         while i < ten10 do begin
             i := i * 10;
-            writeln('g( ', i, ' ) = ', gfun(i));
+            writeln( 'g( ', i, ' ) = ', gfun(i, iginv(i)) );
         end;
     end;
 end;
@@ -106,7 +113,10 @@ begin
     readln(tcases);
     repeat
         readln(l, r);
-        writeln(( s2gfun(r) + bigprime - s2gfun(l-1) ) mod bigprime);
+        if l = 1 then
+            writeln( s2gfun(r) )
+        else
+            writeln( moddif( s2gfun(r), s2gfun(l-1) ) );
         dec(tcases);
     until tcases = 0;
 end.
