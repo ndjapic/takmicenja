@@ -1,6 +1,6 @@
 program pstones;
 {$assertions-} {$R-}
-(*  *)
+(* https://wiki.freepascal.org/Bit_manipulation *)
 uses
     math;
 const
@@ -35,6 +35,8 @@ type
         freq: tfreq;
         deg: packed array [1 .. maxv] of shortint;
         j: integer;
+        setid, siinv: array [1 .. maxv] of shortint;
+        leale, leari: shortint;
     end;
 var
     testcase: integer;
@@ -56,6 +58,7 @@ var
         leaves: mask;
         first, next: longint;
     end;
+    si: shortint;
 
 function lgf(x: int64): shortint;
 var
@@ -121,11 +124,10 @@ var
     tmp: int64;
     hash, hi: longint;
     found: boolean;
-    i: shortint;
 begin
     tmp := leaves[1] xor leaves[0];
-    for i := 1 to 50 div hte do
-        tmp := tmp shr hte xor tmp;
+    while tmp > htm do
+        tmp := (tmp shr hte) xor (tmp and htm);
     hash := tmp and htm;
     hi := ht[hash].first;
     while (hi <> -1) and (cmpleaves(leaves, ht[hi].leaves) <> 0) do
@@ -179,7 +181,7 @@ end;
 procedure dfs(i: shortint);
 var
     u, uv, v, c, di, mo: shortint;
-    x: int64;
+    b: int64;
     m: mask;
 begin
     {assert(i >= 0);}
@@ -189,13 +191,14 @@ begin
         for di := 0 to 1 do begin
             while m[di] > 0 do begin
 
-                x := m[di] and -m[di];
-                dec(m[di], x);
-                mo := lgf(x);
+                b := m[di] and -m[di];
+                dec(m[di], b);
+                mo := lgf(b);
                 u := 1 + mo + 50 * di;
 
-                dec(cr.leaves[di], x);
+                dec(cr.leaves[di], b);
                 cr.active[u] := false;
+                lea2out(u);
                 uv := t.v[u].uv;
                 {writeln('u = ', u, '  uv = ', uv);
                 assert(uv <> 0);}
@@ -208,7 +211,10 @@ begin
                         if cr.freq[c] = 1 then
                             inc(cr.j, pow2cm1[c]);
                         dec(cr.deg[v]);
-                        if cr.deg[v] = 1 then switchleaf(v);
+                        if cr.deg[v] = 1 then begin
+                            switchleaf(v);
+                            in2lea(v);
+                        end;
                     end else begin
                         dec(cr.freq[c]);
                         if cr.freq[c] = 0 then
@@ -221,8 +227,9 @@ begin
                 cr := base;
 }
                 dfs(i-1);
-                inc(cr.leaves[di], x);
+                inc(cr.leaves[di], b);
                 cr.active[u] := true;
+                out2lea(u);
                 uv := t.v[u].uv;
                 repeat
                     v := t.uv[uv].v;
@@ -231,7 +238,10 @@ begin
                         dec(cr.freq[c]);
                         if cr.freq[c] = 0 then
                             dec(cr.j, pow2cm1[c]);
-                        if cr.deg[v] = 1 then switchleaf(v);
+                        if cr.deg[v] = 1 then begin
+                            switchleaf(v);
+                            lea2in(v);
+                        end;
                         inc(cr.deg[v]);
                     end else begin
                         inc(cr.freq[c]);
@@ -261,7 +271,7 @@ begin
     repeat
         readln(n, k);
 
-        htx := log2(1 + 10*n/100) + log2(1 + 10*k/12);
+        htx := log2(1 + 10*(n-1)/99) + log2(1 + 10*(k-1)/11);
         hte := 6 + round(2 * htx);
         htm := longint(1) shl hte - 1;
         for htlen := 0 to htm do ht[htlen].first := -1;
@@ -271,6 +281,8 @@ begin
             t.v[u].uv := 0;
             cr.deg[u] := 0;
             cr.active[u] := true;
+            cr.setid[u] := u;
+            cr.siinv[u] := u;
         end;
         for c := 1 to k do cr.freq[c] := 0;
         for uv := 1 to n-1 do begin
@@ -281,9 +293,13 @@ begin
 
         cr.leaves[0] := 0;
         cr.leaves[1] := 0;
+        cr.leale := n+1;
+        cr.leari := n;
         for u := 1 to n do
-            if cr.deg[u] <= 1 then
+            if cr.deg[u] <= 1 then begin
                 switchleaf(u);
+                in2lea(u);
+            end;
         for i := 0 to n do
             for j1 := 0 to 1 shl k - 1 do
                 colset[i, j1] := '0';
