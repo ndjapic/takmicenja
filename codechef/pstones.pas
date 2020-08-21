@@ -154,16 +154,12 @@ begin
     bt.a[bi].h := 1 + max( bt.a[cht].h, bt.a[chf].h );
 end;
 
-procedure rotate(root: longint; dir: boolean);
-var
-    pivot: longint;
+procedure rotate(root, pivot: longint; dir: boolean);
 begin
-    pivot := bt.a[root].ch[dir];
     bt.a[root].ch[not dir] := bt.a[pivot].ch[dir];
     bt.a[pivot].ch[dir] := root;
-    bt.root := pivot;
     updateheight(root);
-    updateheight(pivot);
+    bt.root := pivot;
 end;
 
 procedure makenode(bi: longint);
@@ -189,6 +185,7 @@ var
     chd, chn: longint;
 begin
     {assert(bi <= maxbt);}
+    bt.root := bi;
     search := bi <= bt.len;
     if search then begin
 
@@ -203,9 +200,11 @@ begin
             dir := cmp > 0;
             chd := node.ch[dir];
             chn := node.ch[not dir];
+
             if chd = 0 then
                 chd := bt.len + 1;
-            bt.root := chd;
+            node.ch[dir] := chd;
+            bt.a[bi] := node;
 
             search := btfound(chd);
 
@@ -213,17 +212,16 @@ begin
             bf := bt.a[chd].h - bt.a[chn].h;
             if bf > 1 then begin
                 if bt.ldir <> dir then begin
-                    rotate(chd, dir);
-                    chd := bt.root;
+                    gch := bt.a[chd].ch[bt.ldir];
+                    rotate(chd, gch, dir);
+                    rotate(bi, gch, not dir);
+                end else begin
+                    rotate(bi, chd, not dir);
                 end;
-                rotate(bi, not dir);
-            end else
-                bt.root := bi;
+            end;
+            updateheight(bt.root);
 
-            node.ch[dir] := chd;
-            bt.a[bi] := node;
             bt.ldir := dir;
-            updateheight(bi);
 
         end;    
 
