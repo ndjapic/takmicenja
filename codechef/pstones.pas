@@ -46,10 +46,9 @@ var
     t: graph;
     cr: crown;
     bt: record
-        a: array [1 .. maxbt] of tnode;
+        a: array [0 .. maxbt] of tnode;
         len, root: longint;
         ldir: boolean;
-        {lbf: shortint;}
     end;
     colset: array [0 .. maxv, 0 .. maxj] of char;
     lgt: array [0 .. maxlgn] of shortint;
@@ -159,7 +158,7 @@ procedure rotate(root: longint; dir: boolean);
 var
     pivot: longint;
 begin
-    pivot := bt.a[root].
+    pivot := bt.a[root].ch[dir];
     bt.a[root].ch[not dir] := bt.a[pivot].ch[dir];
     bt.a[pivot].ch[dir] := root;
     bt.root := pivot;
@@ -167,28 +166,31 @@ begin
     updateheight(pivot);
 end;
 
+procedure makenode(bi: longint);
+var
+    node: tnode;
+begin
+    inc(bt.len);
+    {if bt.len >= length(bt.a) - 2 then
+        setlength(bt.a, 2 * length(bt.a));}
+    node.leaves := cr.leaves;
+    node.ch[false] := 0;
+    node.ch[true] := 0;
+    node.h := 1;
+    bt.a[bi] := node;
+end;
+
 function btfound(bi: longint): boolean;
 var
     cmp: int64;
     node: tnode;
-    dir, found: boolean;
+    dir, search: boolean;
     bf: shortint;
     chd, chn: longint;
 begin
     {assert(bi <= maxbt);}
-    found := bi <= bt.len;
-    if not found then begin
-
-        inc(bt.len);
-        {if bt.len >= length(bt.a) - 2 then
-            setlength(bt.a, 2 * length(bt.a));}
-        node.leaves := cr.leaves;
-        node.ch[false] := 0;
-        node.ch[true] := 0;
-        node.h := 1;
-        bt.a[bi] := node;
-
-    end else begin
+    search := bi <= bt.len;
+    if search then begin
 
         node := bt.a[bi];
         cmp := cmpleaves(cr.leaves, node.leaves);
@@ -201,31 +203,34 @@ begin
             dir := cmp > 0;
             chd := node.ch[dir];
             chn := node.ch[not dir];
-            if node.ch[dir] = 0 then
-                bt.a[bi].ch[dir] := bt.len + 1;
+            if chd = 0 then
+                chd := bt.len + 1;
+            bt.root := chd;
 
-            found := btfound(bt.a[bi].ch[dir]);
+            search := btfound(chd);
 
-            bt.a[bi].ch[dir] := bt.root;
-            chd := bt.a[bi].ch[dir];
-            chn := bt.a[bi].ch[not dir];
+            chd := bt.root;
             bf := bt.a[chd].h - bt.a[chn].h;
             if bf > 1 then begin
                 if bt.ldir <> dir then begin
                     rotate(chd, dir);
-                    bt.a[bi].ch[dir] := bt.root;
+                    chd := bt.root;
                 end;
                 rotate(bi, not dir);
-            end;
+            end else
+                bt.root := bi;
 
+            node.ch[dir] := chd;
+            bt.a[bi] := node;
             bt.ldir := dir;
-            {bt.lbf := bf;}
             updateheight(bi);
 
-        end;
-    end;
+        end;    
 
-    btfound := found;
+    end else
+        makenode(bi);
+
+    btfound := search;
 end;
 
 {procedure dfs(i: shortint; base: crown);}
