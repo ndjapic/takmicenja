@@ -34,6 +34,21 @@ begin
     tree.nodes[child].direction := direction;
 end;
 
+procedure updateheight(root: int32);
+var
+    child: int32;
+    h0, h1: int8;
+begin
+    child := tree.nodes[root].childs[0];
+    h0 := tree.nodes[child].height;
+    child := tree.nodes[root].childs[1];
+    h1 := tree.nodes[child].height;
+    if h0 > h1 then
+        tree.nodes[root].height := 1 + h0
+    else
+        tree.nodes[root].height := 1 + h1;
+end;
+
 procedure appendnode(data: tdata; parent: int32; direction: int8);
 begin
     inc(tree.size);
@@ -43,22 +58,6 @@ begin
     tree.nodes[tree.size].childs[1] := 0;
     tree.nodes[tree.size].height := 1;
     connect(parent, tree.size, direction);
-end;
-
-procedure updateheight(root: int32);
-var
-    d: int8;
-    childs: array [0 .. 1] of int32;
-    h: array [0 .. 1] of int8;
-begin
-    for d := 0 to 1 do begin
-        childs[d] := tree.nodes[root].childs[d];
-        h[d] := tree.nodes[childs[d]].height;
-    end;
-    if h[0] > h[1] then
-        tree.nodes[root].height := 1 + h[0]
-    else
-        tree.nodes[root].height := 1 + h[1];
 end;
 
 procedure rotate(pivot: int32);
@@ -81,7 +80,7 @@ end;
 procedure searchappend(data: tdata; root: int32);
 var
     dif, child, parent, sibling: int32;
-    direction, dir2: int8;
+    dir1, dir2: int8;
 begin
     if root = 0 then
         appendnode(data, 0, 0)
@@ -90,10 +89,10 @@ begin
         if dif = 0 then
             inc(tree.nodes[root].freq)
         else begin
-            direction := ord(dif > 0);
-            child := tree.nodes[root].childs[direction];
+            dir1 := ord(dif > 0);
+            child := tree.nodes[root].childs[dir1];
             if child = 0 then
-                appendnode(data, root, direction)
+                appendnode(data, root, dir1)
             else
                 searchappend(data, child);
             updateheight(root);
@@ -106,7 +105,7 @@ begin
                     sibling := tree.nodes[parent].childs[1 - dir2];
                     if tree.nodes[root].height -
                        tree.nodes[sibling].height >= 2 then begin
-                        if dir2 <> direction then begin
+                        if dir2 <> dir1 then begin
                             rotate(child);
                             rotate(child);
                         end else
@@ -120,11 +119,10 @@ begin
     end;
 end;
 
-function firstnode(root: int32): int32;
+function firstnode(u: int32): int32;
 var
-    u, v: int32;
+    v: int32;
 begin
-    u := root;
     v := tree.nodes[u].childs[0];
     while v <> 0 do begin
         u := v;
