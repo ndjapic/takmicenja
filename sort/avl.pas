@@ -13,7 +13,7 @@ type
         end;
     end;
 var
-    t, i, j, u, v, freq: int32;
+    t, i, u, l, r: int32;
     a: array [1 .. maxt] of tdata;
     tree: tavltree;
 
@@ -45,6 +45,22 @@ begin
     connect(parent, tree.size, direction);
 end;
 
+procedure updateheight(root: int32);
+var
+    d: int8;
+    childs: array [0 .. 1] of int32;
+    h: array [0 .. 1] of int8;
+begin
+    for d := 0 to 1 do begin
+        childs[d] := tree.nodes[root].childs[d];
+        h[d] := tree.nodes[childs[d]].height;
+    end;
+    if h[0] > h[1] then
+        tree.nodes[root].height := 1 + h[0]
+    else
+        tree.nodes[root].height := 1 + h[1];
+end;
+
 procedure rotate(pivot: int32);
 var
     root, child, parent: int32;
@@ -58,6 +74,8 @@ begin
     connect(root, child, 1 - direction);
     connect(parent, pivot, tree.nodes[root].direction);
     connect(pivot, root, direction);
+    updateheight(root);
+    updateheight(pivot);
 end;
 
 procedure searchappend(data: tdata; root: int32);
@@ -87,8 +105,11 @@ begin
                     sibling := tree.nodes[parent].childs[1 - dir2];
                     if tree.nodes[root].height -
                        tree.nodes[sibling].height >= 2 then begin
-                        if dir2 <> direction then rotate(child);
-                        rotate(root);
+                        if dir2 <> direction then begin
+                            rotate(child);
+                            rotate(child);
+                        end else
+                            rotate(root);
                     end;
                 end;
             end;
@@ -110,6 +131,8 @@ begin
 end;
 
 function nextnode(u: int32): int32;
+var
+    v: int32;
 begin
     v := tree.nodes[u].childs[1];
     if v <> 0 then
@@ -123,7 +146,6 @@ begin
     nextnode := u;
 end;
 
-
 begin
     readln(t);
     for i := 1 to t do readln(a[i]);
@@ -132,13 +154,13 @@ begin
     for i := 1 to t do searchappend(a[i], tree.root);
 
     u := firstnode(tree.root);
-    i := 0;
+    l := 0;
     while u <> 0 do begin
 
-        freq := tree.nodes[u].freq;
-        for j := i + 1 to i + freq do
-            a[j] := tree.nodes[u].data;
-        inc(i, freq);
+        r := l + tree.nodes[u].freq;
+        for i := l + 1 to r do
+            a[i] := tree.nodes[u].data;
+        l := r;
         u := nextnode(u);
 
     end;
