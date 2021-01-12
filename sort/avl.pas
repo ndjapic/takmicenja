@@ -94,13 +94,14 @@ begin
             child := tree.nodes[root].childs[direction];
             if child = 0 then
                 appendnode(data, root, direction)
-            else begin
+            else
                 searchappend(data, child);
-                if tree.nodes[child].height =
-                   tree.nodes[root].height then
-                    inc(tree.nodes[root].height);
+            updateheight(root);
+
+            if child <> 0 then begin
                 parent := tree.nodes[root].parent;
                 if parent <> 0 then begin
+
                     dir2 := tree.nodes[root].direction;
                     sibling := tree.nodes[parent].childs[1 - dir2];
                     if tree.nodes[root].height -
@@ -111,8 +112,10 @@ begin
                         end else
                             rotate(root);
                     end;
+
                 end;
             end;
+
         end;
     end;
 end;
