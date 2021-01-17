@@ -95,17 +95,28 @@ begin
                 if parent <> 0 then begin
 
                     dir2 := tree.nodes[root].direction;
-                    if (tree.nodes[parent].balance) * (2 * dir2 - 1) < 0 then
+                    if tree.nodes[parent].balance * (2 * dir2 - 1) < 0 then
                         inc(tree.nodes[parent].balance, 2 * dir2 - 1)
                     else begin
                         if dir2 <> dir1 then begin
                             rotate(child);
                             rotate(child);
                             tree.nodes[child].balance := 0;
-                        end else
+                            if child = tree.size then begin
+                                tree.nodes[root].balance := 0;
+                                tree.nodes[parent].balance := 0;
+                            end else if tree.nodes[child].balance * tree.nodes[parent].balance > 0 then begin
+                                tree.nodes[parent].balance := tree.nodes[root].balance;
+                                tree.nodes[root].balance := 0;
+                            end else begin
+                                tree.nodes[root].balance := tree.nodes[parent].balance;
+                                tree.nodes[parent].balance := 0;
+                            end;
+                        end else begin
                             rotate(root);
-                        tree.nodes[root].balance := 0;
-                        tree.nodes[parent].balance := 0;
+                            tree.nodes[root].balance := 0;
+                            tree.nodes[parent].balance := 0;
+                        end;
                     end;
 
                 end;
@@ -168,6 +179,4 @@ begin
     dfs(tree.root);
 
     for i := 1 to t do writeln(a[i]);
-end.
-
 end.
