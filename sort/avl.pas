@@ -9,7 +9,7 @@ type
             data: tdata;
             freq, parent: int32;
             childs: array [0 .. 1] of int32;
-            height, direction: int8;
+            balance, direction: int8;
         end;
     end;
 var
@@ -21,7 +21,7 @@ procedure createtree;
 begin
     tree.root := 0;
     tree.size := 0;
-    tree.nodes[0].height := 0;
+    tree.nodes[0].balance := 0;
 end;
 
 procedure connect(parent, child: int32; direction: int8);
@@ -33,7 +33,7 @@ begin
     tree.nodes[child].parent := parent;
     tree.nodes[child].direction := direction;
 end;
-
+{
 procedure updateheight(root: int32);
 var
     child: int32;
@@ -48,7 +48,7 @@ begin
     else
         tree.nodes[root].height := 1 + h1;
 end;
-
+}
 procedure appendnode(data: tdata; parent: int32; direction: int8);
 begin
     inc(tree.size);
@@ -56,7 +56,7 @@ begin
     tree.nodes[tree.size].freq := 1;
     tree.nodes[tree.size].childs[0] := 0;
     tree.nodes[tree.size].childs[1] := 0;
-    tree.nodes[tree.size].height := 1;
+    tree.nodes[tree.size].balance := 0;
     connect(parent, tree.size, direction);
 end;
 
@@ -72,49 +72,61 @@ begin
     child := tree.nodes[pivot].childs[direction];
     connect(root, child, 1 - direction);
     connect(parent, pivot, tree.nodes[root].direction);
-    connect(pivot, root, direction);
+    connect(pivot, root, direction);{
     updateheight(root);
-    updateheight(pivot);
+    updateheight(pivot);}
 end;
 
 procedure searchappend(data: tdata; root: int32);
 var
     dif, child, parent, sibling: int32;
-    dir1, dir2: int8;
+    dir1, dir2, h0, h1: int8;
 begin
     if root = 0 then
         appendnode(data, 0, 0)
     else begin
         dif := data - tree.nodes[root].data;
+        dir1 := ord(dif > 0);
+        child := tree.nodes[root].childs[dir1];
+        while (dif <> 0) and (child <> 0) do begin
+            root := child;
+            dif := data - tree.nodes[root].data;
+            dir1 := ord(dif > 0);
+            child := tree.nodes[root].childs[dir1];
+        end;
+        
         if dif = 0 then
             inc(tree.nodes[root].freq)
         else begin
-            dir1 := ord(dif > 0);
-            child := tree.nodes[root].childs[dir1];
-            if child = 0 then
-                appendnode(data, root, dir1)
-            else
-                searchappend(data, child);
-            updateheight(root);
-
-            if child <> 0 then begin
+            appendnode(data, root, dir1);
+            child := tree.size;
+            if root <> 0 then begin
                 parent := tree.nodes[root].parent;
+                while (parent <> 0) and (tree.nodes[parent].balance = 0) do begin
+                    inc(tree.nodes[root].balance, 2 * dir1 - 1);
+                    dir1 := tree.nodes[root].direction;
+                    child := root;
+                    root := parent;
+                    parent := tree.nodes[root].parent;
+                end;
                 if parent <> 0 then begin
 
                     dir2 := tree.nodes[root].direction;
-                    sibling := tree.nodes[parent].childs[1 - dir2];
-                    if tree.nodes[root].height -
-                       tree.nodes[sibling].height >= 2 then begin
+                    if (tree.nodes[parent].balance) * (2 * dir2 - 1) < 0 then
+                        inc(tree.nodes[parent].balance, 2 * dir2 - 1)
+                    else begin
                         if dir2 <> dir1 then begin
                             rotate(child);
                             rotate(child);
+                            tree.nodes[child].balance := 0;
                         end else
                             rotate(root);
+                        tree.nodes[root].balance := 0;
+                        tree.nodes[parent].balance := 0;
                     end;
 
                 end;
             end;
-
         end;
     end;
 end;
