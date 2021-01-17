@@ -33,22 +33,7 @@ begin
     tree.nodes[child].parent := parent;
     tree.nodes[child].direction := direction;
 end;
-{
-procedure updateheight(root: int32);
-var
-    child: int32;
-    h0, h1: int8;
-begin
-    child := tree.nodes[root].childs[0];
-    h0 := tree.nodes[child].height;
-    child := tree.nodes[root].childs[1];
-    h1 := tree.nodes[child].height;
-    if h0 > h1 then
-        tree.nodes[root].height := 1 + h0
-    else
-        tree.nodes[root].height := 1 + h1;
-end;
-}
+
 procedure appendnode(data: tdata; parent: int32; direction: int8);
 begin
     inc(tree.size);
@@ -72,15 +57,13 @@ begin
     child := tree.nodes[pivot].childs[direction];
     connect(root, child, 1 - direction);
     connect(parent, pivot, tree.nodes[root].direction);
-    connect(pivot, root, direction);{
-    updateheight(root);
-    updateheight(pivot);}
+    connect(pivot, root, direction);
 end;
 
 procedure searchappend(data: tdata; root: int32);
 var
-    dif, child, parent, sibling: int32;
-    dir1, dir2, h0, h1: int8;
+    dif, child, parent: int32;
+    dir1, dir2: int8;
 begin
     if root = 0 then
         appendnode(data, 0, 0)
@@ -159,6 +142,20 @@ begin
     nextnode := u;
 end;
 
+procedure dfs(root: int32);
+var
+    i: int32;
+begin
+    if root <> 0 then begin
+        dfs(tree.nodes[root].childs[0]);
+        r := l + tree.nodes[root].freq;
+        for i := l + 1 to r do
+            a[i] := tree.nodes[root].data;
+        l := r;
+        dfs(tree.nodes[root].childs[1]);
+    end;
+end;
+
 begin
     readln(t);
     for i := 1 to t do readln(a[i]);
@@ -168,15 +165,9 @@ begin
 
     u := firstnode(tree.root);
     l := 0;
-    while u <> 0 do begin
-
-        r := l + tree.nodes[u].freq;
-        for i := l + 1 to r do
-            a[i] := tree.nodes[u].data;
-        l := r;
-        u := nextnode(u);
-
-    end;
+    dfs(tree.root);
 
     for i := 1 to t do writeln(a[i]);
+end.
+
 end.
