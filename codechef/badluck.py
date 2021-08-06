@@ -1,4 +1,7 @@
-from bisect import bisect
+from itertools import permutations
+from random import seed, randint
+
+seed()
 
 def shadow(x, d):
     result, m, yi = 0, 0, 0
