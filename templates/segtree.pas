@@ -58,7 +58,7 @@ var
     m: int32;
 begin
     if (r < vl) or (vr < l) then
-        query := 0
+        query := low(int32)
     else if (l <= vl) and (vr <= r) then
         query := t[v]
     else {if l < r then} begin
