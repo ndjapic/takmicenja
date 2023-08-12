@@ -7,7 +7,7 @@ var
         n: int32;
     end;
 
-function pqlt(x, y: int32): boolean;
+function prior(x, y: int32): boolean;
 begin
     pqlt := x < y;
 end;
@@ -18,7 +18,7 @@ var
     u: int32;
 begin
     u := v div 2;
-    if (v > 1) and pqlt(x, pq.a[u]) then begin
+    if (v > 1) and prior(x, pq.a[u]) then begin
         pq.a[v] := pq.a[u];
         pqins(u, x);
     end else begin
@@ -33,8 +33,8 @@ var
     v: int32;
 begin
     v := u * 2;
-    if (v+1 <= pq.n-1) and pqlt(pq.a[v+1], pq.a[v]) then inc(v);
-    if (v <= pq.n-1) and pqlt(pq.a[v], pq.a[pq.n]) then begin
+    if (v+1 <= pq.n-1) and prior(pq.a[v+1], pq.a[v]) then inc(v);
+    if (v <= pq.n-1) and prior(pq.a[v], pq.a[pq.n]) then begin
         pq.a[u] := pq.a[v];
         pqdel(v);
     end else begin
