@@ -9,7 +9,7 @@ var
 
 function prior(x, y: int32): boolean;
 begin
-    pqlt := x < y;
+    prior := x < y;
 end;
 
 procedure pqins(v, x: int32);
