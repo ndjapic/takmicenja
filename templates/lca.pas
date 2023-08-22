@@ -12,7 +12,7 @@ var
 procedure addarrow(u, v, i: int32);
 begin
     sib[i] := adj[u];
-    adj[u] := e;
+    adj[u] := i;
     tar[i] := v;
 end;
 
