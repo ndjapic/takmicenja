@@ -30,7 +30,7 @@ begin
 
     i := adj[u];
     while i <> 0 do begin
-        v := tar[u];
+        v := tar[i];
         if par[u] <> v then begin
             par[v] := u;
             dfs(v);
