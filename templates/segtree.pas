@@ -44,7 +44,7 @@ begin
     else if (l <= vl) and (vr <= r) then begin
         inc(st[v], d);
         inc(lz[v], d);
-    end else {if l < r then} begin
+    end else {if vl < vr then} begin
         push(v);
         m := (vl+vr) div 2;
         update(2*v, vl, m, l, r, d);
@@ -53,7 +53,7 @@ begin
     end;
 end;
 
-procedure query(v, vl, vr, l, r: int32): query;
+function query(v, vl, vr, l, r: int32): int32;
 var
     m: int32;
 begin
@@ -61,7 +61,7 @@ begin
         query := low(int32)
     else if (l <= vl) and (vr <= r) then
         query := t[v]
-    else {if l < r then} begin
+    else {if vl < vr then} begin
         push(v);
         m := (vl+vr) div 2;
         query := max(
