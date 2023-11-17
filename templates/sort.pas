@@ -3,7 +3,7 @@ const
     maxn = 200 * 1000;
 var
     n, i: int32;
-    a, p, cp: array [1 .. maxn] of int64;
+    a, p, merge: array [1 .. maxn] of int64;
 
 procedure msort(l, r: int32);
 var
@@ -19,14 +19,14 @@ begin
         ir := m+1;
         for i := l to r do
             if (ir > r) or (il <= m) and (a[p[il]] <= a[p[ir]]) then begin
-                cp[i] := p[il];
+                merge[i] := p[il];
                 inc(il);
             end else begin
-                cp[i] := p[ir];
+                merge[i] := p[ir];
                 inc(ir);
             end;
 
-        for i := l to r do p[i] := cp[i];
+        for i := l to r do p[i] := merge[i];
 
     end;
 end;
