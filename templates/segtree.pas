@@ -60,7 +60,7 @@ begin
     if (r < vl) or (vr < l) then
         query := low(int32)
     else if (l <= vl) and (vr <= r) then
-        query := t[v]
+        query := st[v]
     else {if vl < vr then} begin
         push(v);
         m := (vl+vr) div 2;
