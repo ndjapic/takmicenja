@@ -10,7 +10,7 @@ end;
 
 function lcm(a, b: int64): int64;
 begin
-    lcm := a div gcd(a mod b) * b;
+    lcm := a div gcd(a, b) * b;
 end;
 
 begin
