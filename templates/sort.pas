@@ -33,7 +33,7 @@ begin
     end;
 end;
 
-procedure msorti(var indices, priority: array [1 .. maxn] of int32; l, r: int32);
+procedure msorti(var indices, priority: tarr32; l, r: int32);
 var
     m, i, j, k: int32;
 begin
