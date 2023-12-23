@@ -2,7 +2,7 @@ program sort;
 const
     maxn = 200 * 1000;
 type
-    tarr32: array [1 .. maxn] of int32;
+    tarr32 = array [1 .. maxn] of int32;
 var
     n, i: int32;
     a, p, merge: tarr32;
