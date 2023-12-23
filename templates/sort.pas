@@ -1,13 +1,15 @@
 program sort;
 const
     maxn = 200 * 1000;
+type
+    tarr32: array [1 .. maxn] of int32;
 var
     n, i: int32;
-    a, p, merge: array [1 .. maxn] of int64;
+    a, p, merge: tarr32;
 
 procedure msort(l, r: int32);
 var
-    m, i, il, ir: int32;
+    m, i, j, k: int32;
 begin
     if l < r then begin
 
@@ -15,18 +17,49 @@ begin
         msort(l, m);
         msort(m+1, r);
 
-        il := l;
-        ir := m+1;
+        j := l;
+        k := m+1;
         for i := l to r do
-            if (ir > r) or (il <= m) and (a[p[il]] <= a[p[ir]]) then begin
-                merge[i] := p[il];
-                inc(il);
+            if (k > r) or (j <= m) and (a[j] <= a[k]) then begin
+                merge[i] := a[j];
+                inc(j);
             end else begin
-                merge[i] := p[ir];
-                inc(ir);
+                merge[i] := a[k];
+                inc(k);
             end;
 
-        for i := l to r do p[i] := merge[i];
+        for i := l to r do a[i] := merge[i];
+
+    end;
+end;
+
+procedure msorti(var indices, priority: array [1 .. maxn] of int32; l, r: int32);
+var
+    m, i, j, k: int32;
+begin
+    if l < r then begin
+
+        m := (l+r) div 2;
+        msort(indices, priority, l, m);
+        msort(indices, priority, m+1, r);
+
+        j := l;
+        k := m+1;
+        for i := l to r do
+            if (k > r) or (j <= m) and (
+                (priority[indices[j]] <= priority[indices[k]]) and (
+                    (priority[indices[j]] < priority[indices[k]]) or
+                    (indices[j] <= indices[k])
+                )
+            ) then begin
+                merge[i] := indices[j];
+                inc(j);
+            end else begin
+                merge[i] := indices[k];
+                inc(k);
+            end;
+
+        for i := l to r do indices[i] := merge[i];
 
     end;
 end;
@@ -61,5 +94,5 @@ begin
     end;
     readln;
 
-    msort(1, n);
+    msorti(p, a, 1, n);
 end.
