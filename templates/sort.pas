@@ -40,8 +40,8 @@ begin
     if l < r then begin
 
         m := (l+r) div 2;
-        msort(indices, priority, l, m);
-        msort(indices, priority, m+1, r);
+        msorti(indices, priority, l, m);
+        msorti(indices, priority, m+1, r);
 
         j := l;
         k := m+1;
