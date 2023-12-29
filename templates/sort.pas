@@ -7,30 +7,32 @@ var
     n, i: int32;
     a, p, merge: tarr32;
 
-procedure msort(l, r: int32);
+function msort(l, r: int32; inversions: int64): int64;
 var
     m, i, j, k: int32;
 begin
-    if l < r then begin
+    if r-l > 1 then begin
 
         m := (l+r) div 2;
-        msort(l, m);
-        msort(m+1, r);
+        inversions := msort(l, m, inversions);
+        inversions := msort(m, r, inversions);
 
         j := l;
-        k := m+1;
-        for i := l to r do
-            if (k > r) or (j <= m) and (a[j] <= a[k]) then begin
+        k := m;
+        for i := l to r-1 do
+            if (k = r) or (j < m) and (a[j] <= a[k]) then begin
                 merge[i] := a[j];
                 inc(j);
             end else begin
                 merge[i] := a[k];
+                inc(inversions, m-j);
                 inc(k);
             end;
 
-        for i := l to r do a[i] := merge[i];
+        for i := l to r-1 do a[i] := merge[i];
 
     end;
+    msort := inversions;
 end;
 
 procedure msorti(var indices, priority: tarr32; l, r: int32);
