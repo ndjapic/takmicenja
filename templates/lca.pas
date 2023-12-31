@@ -16,6 +16,19 @@ begin
     tar[i] := v;
 end;
 
+procedure readedges(n, m: int32);
+var
+    u, v, i: int32;
+begin
+    for v := 1 to n do adj[v] := 0;
+
+    for i := 1 to m do begin
+        readln(u, v);
+        addarrow(u, v, i);
+        addarrow(v, u, -i);
+    end;
+end;
+
 procedure dfs(u: int32);
 var
     i, v: int32;
@@ -63,14 +76,7 @@ end;
 
 begin
     readln(n, m); (* m := n-1; (tree) *)
-
-    for v := 1 to n do adj[v] := 0;
-
-    for i := 1 to m do begin
-        readln(u, v);
-        addarrow(u, v, i);
-        addarrow(v, u, -i);
-    end;
+    readedges(n, m);
 
     time := 0;
     par[1] := 1;
