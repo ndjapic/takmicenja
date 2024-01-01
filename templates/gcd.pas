@@ -1,38 +1,29 @@
 program gcd;
-
-function gcd(a, b: int64): int64;
-begin
-    if b = 0 then
-        gcd := a
-    else
-        gcd := gcd(b, a mod b);
-end;
-
-function bin_gcd(a, b: int64): int64;
+const
+    small_num = 8000;
 var
-    c: int64;
-    e: int8;
+    x, y: int32;
+    gcd_memo: array [0 .. small_num, 0 .. small_num] of int32;
+
+function gcd(a, b: int32): int32;
+var
+    ans: int32;
 begin
-    c := a or b;
-    e := 0;
-    while not odd(c) do begin
-        c := c shr 1;
-        inc(e);
-    end;
-
-    a := a shr e;
-    b := b shr e;
-    while (a > 0) and (b > 0) do
-        if not odd(a) then
-            a := a shr 1
-        else if not odd(b) then
-            b := b shr 1
-        else if a > b then
-            dec(a, b)
+    if a < b then
+        gcd := gcd(b, a)
+    else if a <= small_num then
+        gcd := gcd_memo[a, b]
+    else if not odd(a) then begin
+        if not odd(b) then
+            gcd := gcd(a shr 1, b shr 1) shl 1
         else
-            dec(b, a);
-
-    bin_gcd := (a+b) shl e;
+            gcd := gcd(a shr 1, b);
+    end else if not odd(b) then
+        gcd := gcd(a, b shr 1)
+    else if a > b then
+        gcd := gcd(a-b, b)
+    else
+        gcd := gcd(a, b-a);
 end;
 
 function lcm(a, b: int64): int64;
@@ -41,4 +32,9 @@ begin
 end;
 
 begin
+    for x := 1 to small_num do begin
+        gcd_memo[x, 0] := x;
+        for y := 1 to x do
+            gcd_memo[x, y] := gcd_memo[y, x mod y];
+    end;
 end.
