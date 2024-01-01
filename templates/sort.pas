@@ -39,20 +39,20 @@ procedure msorti(var indices, priority: tarr32; l, r: int32);
 var
     m, i, j, k: int32;
 begin
-    if l < r then begin
+    if r-l > 1 then begin
 
         m := (l+r) div 2;
         msorti(indices, priority, l, m);
-        msorti(indices, priority, m+1, r);
+        msorti(indices, priority, m, r);
 
         j := l;
-        k := m+1;
-        for i := l to r do
-            if (k > r) or (j <= m) and (
-                (priority[indices[j]] <= priority[indices[k]]) and (
-                    (priority[indices[j]] < priority[indices[k]]) or
+        k := m;
+        for i := l to r-1 do
+            if (k = r) or (j < m) and (
+                (priority[indices[j]] >= priority[indices[k]]) {and (
+                    (priority[indices[j]] > priority[indices[k]]) or
                     (indices[j] <= indices[k])
-                )
+                )}
             ) then begin
                 merge[i] := indices[j];
                 inc(j);
@@ -61,7 +61,7 @@ begin
                 inc(k);
             end;
 
-        for i := l to r do indices[i] := merge[i];
+        for i := l to r-1 do indices[i] := merge[i];
 
     end;
 end;
