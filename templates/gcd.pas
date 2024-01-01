@@ -6,8 +6,6 @@ var
     gcd_memo: array [0 .. small_num, 0 .. small_num] of int32;
 
 function gcd(a, b: int32): int32;
-var
-    ans: int32;
 begin
     if a < b then
         gcd := gcd(b, a)
