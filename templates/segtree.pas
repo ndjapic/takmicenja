@@ -84,12 +84,12 @@ begin
 
             1: begin
                 readln(l, r, d);
-                update(1, 1, v, l, r, d);
+                update(1, 1, n, l, r, d);
             end;
 
             2: begin
                 readln(l, r);
-                writeln(query(1, 1, v, l, r));
+                writeln(query(1, 1, n, l, r));
             end;
         
         end;
