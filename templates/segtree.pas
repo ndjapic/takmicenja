@@ -1,4 +1,6 @@
 program segtree;
+uses
+    math;
 const
     maxn = 100 * 1000;
     maxt = 256 * 1024;
