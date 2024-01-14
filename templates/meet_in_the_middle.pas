@@ -19,13 +19,16 @@ begin
     ij := (i-1)*w+j;
 end;
 
-function leq(c: int8; i, j: int32): boolean;
+function cmp(c1, c2: int8; i1, i2: int32): int8;
 var
     k: int8;
 begin
     k := 1;
-    while (k <= hw) and (bfs[c, i].s[k] = bfs[c, j].s[k]) do inc(k);
-    leq := (k > hw) or (bfs[c, i].s[k] <= bfs[c, j].s[k]);
+    while (k <= hw) and (bfs[c1, i1].s[k] = bfs[c2, i2].s[k]) do inc(k);
+    if k <= hw then
+        cmp := bfs[c1, i1].s[k] - bfs[c2, i2].s[k]
+    else
+        cmp := 0;
 end;
 
 procedure msort(c: int8; l, r: int32);
@@ -41,7 +44,7 @@ begin
         j := l;
         k := m;
         for i := l to r-1 do
-            if (k = r) or (j < m) and leq(c, p[c, j], p[c, k]) then begin
+            if (k = r) or (j < m) and (cmp(c, c, p[c, j], p[c, k]) <= 0) then begin
                 merge[i] := p[c, j];
                 inc(j);
             end else begin
@@ -52,18 +55,6 @@ begin
         for i := l to r-1 do p[c, i] := merge[i];
 
     end;
-end;
-
-function cmp(c1, c2: int8; i1, i2: int32): int8;
-var
-    k: int8;
-begin
-    k := 1;
-    while (k <= hw) and (bfs[c1, p[c1, i1]].s[k] = bfs[c2, p[c2, i2]].s[k]) do inc(k);
-    if k <= hw then
-        cmp := bfs[c1, p[c1, i1]].s[k] - bfs[c2, p[c2, i2]].s[k]
-    else
-        cmp := 0;
 end;
 
 begin
@@ -110,7 +101,7 @@ begin
     l[2] := 1;
 
     while (l[1] <= r[1]) and (l[2] <= r[2]) do begin
-        dif := cmp(1, 2, l[1], l[2]);
+        dif := cmp(1, 2, p[1, l[1]], p[2, l[2]]);
         if dif = 0 then d := min(d, bfs[1, p[1, l[1]]].d + bfs[2, p[2, l[2]]].d);
         if dif <= 0 then inc(l[1]);
         if dif >= 0 then inc(l[2]);
