@@ -2,7 +2,7 @@ program F_Rotation_Puzzle;
 uses
     math;
 const
-    maxq = 2048 * 2048 div 3 + 1; (* dont need +1 ? *)
+    maxq = 243 * 243 * 2;
 var
     h, w, hw, i, j, k, x, y, c, dif: int8;
     par, d: int32;
