@@ -5,11 +5,11 @@ const
     maxq = 2048 * 2048 div 3 + 1; (* dont need +1 ? *)
 var
     h, w, hw, i, j, k, x, y, c, dif: int8;
-    d: int32;
+    par, d: int32;
     l, r: array [1 .. 2] of int32;
     bfs: array [1 .. 2, 1 .. maxq] of record
         s: array [1 .. 64] of int8;
-        d: int32;
+        p, d: int32;
     end;
     p: array [1 .. 2, 1 .. maxq] of int32;
     merge: array [1 .. maxq] of int32;
@@ -72,6 +72,7 @@ begin
 
         l[c] := 1;
         r[c] := 1;
+        bfs[c, 1].p := 1;
         bfs[c, 1].d := 0;
 
         while l[c] <= r[c] do begin
@@ -80,12 +81,16 @@ begin
                     for y := 0 to 1 do begin
 
                         inc(r[c]);
+                        bfs[c, r[c]].p := l[c];
                         bfs[c, r[c]].d := bfs[c, l[c]].d + 1;
                         for k := 1 to hw do bfs[c, r[c]].s[k] := bfs[c, l[c]].s[k];
 
                         for i := 1 to h-1 do
                             for j := 1 to w-1 do
                                 bfs[c, r[c]].s[ij(i+x, j+y)] := bfs[c, l[c]].s[ij(h-i+x, w-j+y)];
+
+                        par := bfs[c, l[c]].p;
+                        if cmp(c, c, par, r[c]) = 0 then dec(r[c]);
 
                     end;
             p[c, l[c]] := l[c];
