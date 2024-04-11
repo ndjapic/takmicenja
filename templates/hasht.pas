@@ -52,18 +52,16 @@ end;
 
 function ht_query(x: int32): int32;
 var
-    u, v, xr: int32;
+    v, xr: int32;
 begin
     xr := x xor ran;
     v := 1;
 
-    while (v > 0) and (xr <> ht[v].x) do begin
-        u := v;
-        if xr < ht[u].x then
+    while (v > 0) and (xr <> ht[v].x) do
+        if xr < ht[v].x then
             v := ht[v].l
         else
             v := ht[v].r;
-    end;
 
     if v > 0 then
         ht_query := ht[v].y
