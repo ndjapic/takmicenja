@@ -1,95 +1,71 @@
-program E_Jellyfish_and_Math;
+program C_Colorful_Beans;
+uses
+    math;
 const
-    maxq = 16 * 1024 * 1024;
+    maxhtn = 200 * 1000;
 var
-    ntc, tci, a, b, c, d, m, l, r, n, w: int32;
-    ran: int64;
-    found: boolean;
-    que: array [1 .. maxq] of record
-        x, y, w: int32;
-    end;
-    t: array [0 .. maxq] of record
-        x: int64;
-        l, r: int32;
+    n, i, a, c: int32;
+    htn, v, ran: int32;
+    ht: array [1 .. maxhtn] of record
+        x, y, l, r: int32;
     end;
 
-procedure enqueue(a, b, w: int32);
+procedure ht_init();
+begin
+    randomize;
+    ran := random(high(int32));
+    htn := 0;
+end;
+
+procedure ht_append(x, y: int32);
+begin
+    inc(htn);
+    ht[htn].x := x xor ran;
+    ht[htn].y := y;
+    ht[htn].l := 0;
+    ht[htn].r := 0;
+end;
+
+procedure ht_update(x, y: int32);
 var
     u, v: int32;
-    x: int64;
 begin
+    x := x xor ran;
+    v := 1;
 
-    v := 0;
-    x := ((int64(a) shl 30) + b) xor ran;
-
-    while (v > -1) and (x <> t[v].x) do begin
+    while (v > 0) and (x <> ht[v].x) do begin
         u := v;
-        if x < t[u].x then
-            v := t[u].l
+        if x < ht[u].x then
+            v := ht[v].l
         else
-            v := t[u].r;
+            v := ht[v].r;
     end;
 
-    {if tci = 1 then writeln(' a=', a, ' b=', b, ' u=', u, ' v=', v, ' w=', w);}
-
-    if v = -1 then begin
-
-        inc(n);
-        if x < t[u].x then
-            t[u].l := n
+    if v = 0 then begin
+        ht_append(x xor ran, y);
+        if x < ht[u].x then
+            ht[u].l := htn
         else
-            t[u].r := n;
-        t[n].x := x;
-        t[n].l := -1;
-        t[n].r := -1;
-
-        inc(r);
-        que[r].x := a;
-        que[r].y := b;
-        que[r].w := w;
-        found := found or (a = c) and (b = d);
-
-    end;
-
+            ht[u].r := htn;
+    end else {if d[v].x = c then}
+        ht[v].y := min(ht[v].y, y);
 end;
 
 begin
-    randomize;
-    ran := random(int64(1) shl 60);
+    readln(n);
 
-    readln(ntc);
-    for tci := 1 to ntc do begin
+    readln(a, c);
+    ht_init();
+    ht_append(c, a);
 
-        readln(a, b, c, d, m);
-
-        l := 1;
-        r := 0;
-        n := 0;
-        t[0].x := -1;
-        t[0].l := -1;
-        t[0].r := -1;
-        w := 0;
-        found := false;
-        enqueue(a, b, w);
-
-        while (l <= r) and not found do begin
-
-            a := que[l].x;
-            b := que[l].y;
-            w := que[l].w + 1;
-            inc(l);
-
-            enqueue(a and b, b, w);
-            enqueue(a or b, b, w);
-            enqueue(a, a xor b, w);
-            enqueue(a, b xor m, w);
-
-        end;
-
-        if found then
-            writeln(w)
-        else
-            writeln(-1);
-
+    for i := 2 to n do begin
+        readln(a, c);
+        ht_update(c, a);
     end;
+
+    a := ht[1].y;
+    for v := 1 to htn do
+        a := max(a, ht[v].y);
+    writeln(a);
+
 end.
