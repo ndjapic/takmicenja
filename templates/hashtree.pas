@@ -1,8 +1,9 @@
-program hasht;
+program hashtree;
 uses
     math;
 const
     maxhtn = 200 * 1000;
+    hte = high(int32);
 var
     n, i, a, c: int32;
     htn, v, ran: int32;
@@ -66,7 +67,7 @@ begin
     if v > 0 then
         ht_query := ht[v].y
     else
-        ht_query := -1;
+        ht_query := hte;
 end;
 
 begin
@@ -74,7 +75,7 @@ begin
 
     readln(a, c);
     ht_init();
-    ht_append(c, a);
+    htn := ht_append(c, a);
 
     for i := 2 to n do begin
         readln(a, c);
