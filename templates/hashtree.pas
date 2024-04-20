@@ -6,7 +6,7 @@ const
     hte = high(int32);
 var
     n, i, a, c: int32;
-    htn, v, ran: int32;
+    htn, v, hash0: int32;
     ht: array [1 .. maxhtn] of record
         x, y, l, r: int32;
     end;
@@ -14,14 +14,14 @@ var
 procedure ht_init();
 begin
     randomize;
-    ran := random(high(int32));
+    hash0 := random(high(int32));
     htn := 0;
 end;
 
 function ht_append(x, y: int32): int32;
 begin
     inc(htn);
-    ht[htn].x := x xor ran;
+    ht[htn].x := x xor hash0;
     ht[htn].y := y;
     ht[htn].l := 0;
     ht[htn].r := 0;
@@ -30,14 +30,14 @@ end;
 
 procedure ht_update(x, y: int32);
 var
-    u, v, xr: int32;
+    u, v, h: int32;
 begin
-    xr := x xor ran;
+    h := x xor hash0;
     v := 1;
 
-    while (v > 0) and (xr <> ht[v].x) do begin
+    while (v > 0) and (h <> ht[v].x) do begin
         u := v;
-        if xr < ht[u].x then
+        if h < ht[u].x then
             v := ht[v].l
         else
             v := ht[v].r;
@@ -45,7 +45,7 @@ begin
 
     if v > 0 then
         ht[v].y := min(ht[v].y, y)
-    else if xr < ht[u].x then
+    else if h < ht[u].x then
         ht[u].l := ht_append(x, y)
     else
         ht[u].r := ht_append(x, y);
@@ -53,13 +53,13 @@ end;
 
 function ht_query(x: int32): int32;
 var
-    v, xr: int32;
+    v, h: int32;
 begin
-    xr := x xor ran;
+    h := x xor hash0;
     v := 1;
 
-    while (v > 0) and (xr <> ht[v].x) do
-        if xr < ht[v].x then
+    while (v > 0) and (h <> ht[v].x) do
+        if h < ht[v].x then
             v := ht[v].l
         else
             v := ht[v].r;
