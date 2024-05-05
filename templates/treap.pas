@@ -24,7 +24,12 @@ begin
         randtime[i] := randtime[j];
         randtime[j] := i;
     end;
+    th.root := 0;
     th.n := 0;
+    th.a[0].x := 0;
+    th.a[0].y := high(int32);
+    th.a[0].l := 0;
+    th.a[0].r := 0;
     th.a[0].n := 0;
 end;
 
@@ -39,53 +44,78 @@ begin
     th_append := th.n;
 end;
 
-function th_insert(u, x, y: int32): int32;
-var
-    v, w: int32;
+procedure th_update(u: int32);
 begin
-    if x <= th.a[u].x then begin
+    th.a[u].n := th.a[th.a[u].l].n + th.a[th.a[u].r].n + 1;
+end;
 
-        v := th.a[u].l;
-        if v = 0 then
-            v := th_append(x, y)
-        else
-            v := th_insert(v, x, y);
-        w := th.a[v].r;
-
-        if y > th.a[u].y then begin
-            th.a[u].l := w;
+function th_rotate(u, v: int32): int32;
+begin
+    if v > 0 then begin
+        if th.a[u].l = v then begin
+            th.a[u].l := th.a[v].r;
             th.a[v].r := u;
-            dec(th.a[u].n, th.a[v].n - th.a[w].n - 1);
-            inc(th.a[v].n, th.a[u].n - th.a[w].n);
-            th_insert := v;
         end else begin
-            th.a[u].l := v;
-            inc(th.a[u].n);
-            th_insert := u;
-        end;
-
-    end else begin
-
-        v := th.a[u].r;
-        if v = 0 then
-            v := th_append(x, y)
-        else
-            v := th_insert(v, x, y);
-        w := th.a[v].l;
-
-        if y > th.a[u].y then begin
-            th.a[u].r := w;
+            th.a[u].r := th.a[v].l;
             th.a[v].l := u;
-            dec(th.a[u].n, th.a[v].n - th.a[w].n - 1);
-            inc(th.a[v].n, th.a[u].n - th.a[w].n);
-            th_insert := v;
-        end else begin
-            th.a[u].r := v;
-            inc(th.a[u].n);
-            th_insert := u;
         end;
-
+        th_update(u);
+        th_update(v);
+        u := v;
     end;
+    th_rotate := u;
+end;
+
+function th_insert(u, x, y: int32): int32;
+begin
+    if u = 0 then begin
+        u := th_append(x, y);
+    end else if x <= th.a[u].x then begin
+        th.a[u].l := th_insert(th.a[u].l, x, y);
+        if y > th.a[u].y then u := th_rotate(u, th.a[u].l);
+    end else begin
+        th.a[u].r := th_insert(th.a[u].r, x, y);
+        if y > th.a[u].y then u := th_rotate(u, th.a[u].r);
+    end;
+    th_update(u);
+    th_insert := u;
+end;
+
+function th_delete(u, x: int32): int32;
+var
+    vl, vr: int32;
+begin
+    if u > 0 then begin
+        if th.a[u].n = 1 then begin
+            if th.a[u].x = x then u := 0;
+        end else begin
+            vl := th.a[u].l;
+            vr := th.a[u].r;
+            if x < th.a[u].x then begin
+                th.a[u].l := th_delete(vl, x);
+            end else if x > th.a[u].x then begin
+                th.a[u].r := th_delete(vr, x);
+            end else if vr = 0 then begin
+                vl := th_rotate(u, vl);
+                th.a[vl].r := th_delete(u, x);
+                u := vl;
+            end else if vl = 0 then begin
+                vr := th_rotate(u, vr);
+                th.a[vr].l := th_delete(u, x);
+                u := vr;
+            end else if th.a[vl].y >= th.a[vr].y then begin
+                vl := th_rotate(u, vl);
+                th.a[vl].r := th_delete(u, x);
+                u := vl;
+            end else begin
+                vr := th_rotate(u, vr);
+                th.a[vr].l := th_delete(u, x);
+                u := vr;
+            end;
+            th_update(u);
+        end;
+    end;
+    th_delete := u;
 end;
 
 function th_get(u, i: int32): int32;
@@ -120,30 +150,38 @@ end;
 procedure dfs(u: int32);
 begin
     if u > 0 then begin
+        write(' [');
         dfs(th.a[u].l);
-        inc(i);
-        a[i] := th.a[u].x;
+        inc(n);
+        a[n] := th.a[u].x;
+        write(a[n]);
         dfs(th.a[u].r);
+        write('] ');
     end;
 end;
 
 begin
     readln(n);
 
-    read(a[1]);
     th_init();
-    th.root := th_append(a[1], randtime[1]);
 
-    for i := 2 to n do begin
+    for i := 1 to n do begin
         read(a[i]);
         th.root := th_insert(th.root, a[i], randtime[i]);
     end;
     readln;
 
-    for i := 1 to n do writeln(' i=',i, ' a[i]=',a[i], ' ord(a[i])=',th_ord(th.root, a[i]), ' get(i)=',th_get(th.root, i));
+    writeln(' root=',th.root);
+    for i := 1 to th.a[th.root].n do writeln(' i=',i, ' a[i]=',a[i], ' ord(a[i])=',th_ord(th.root, a[i]), ' get(i)=',th_get(th.root, i));
 
-    i := 0;
+    th.root := th_delete(th.root, 5);
+
+    n := 0;
     dfs(th.root);
+    writeln;
+
+    writeln(' root=',th.root);
+    for i := 1 to th.a[th.root].n do writeln(' i=',i, ' a[i]=',a[i], ' ord(a[i])=',th_ord(th.root, a[i]), ' get(i)=',th_get(th.root, i));
 
     for i := 1 to n-1 do write(a[i], ' ');
     writeln(a[n]);
@@ -152,6 +190,7 @@ end.
 (*
 9
 4 6 8 9 5 6 4 5 4
+ root=3
  i=1 a[i]=4 ord(a[i])=3 get(i)=4
  i=2 a[i]=6 ord(a[i])=7 get(i)=4
  i=3 a[i]=8 ord(a[i])=8 get(i)=4
@@ -161,7 +200,17 @@ end.
  i=7 a[i]=4 ord(a[i])=3 get(i)=6
  i=8 a[i]=5 ord(a[i])=5 get(i)=8
  i=9 a[i]=4 ord(a[i])=3 get(i)=9
-4 4 4 5 5 6 6 8 9
+ [ [ [ [4] 4] 4 [ [5] 6 [6] ] ] 8 [9] ] 
+ root=3
+ i=1 a[i]=4 ord(a[i])=3 get(i)=4
+ i=2 a[i]=4 ord(a[i])=3 get(i)=4
+ i=3 a[i]=4 ord(a[i])=3 get(i)=4
+ i=4 a[i]=5 ord(a[i])=4 get(i)=5
+ i=5 a[i]=6 ord(a[i])=6 get(i)=6
+ i=6 a[i]=6 ord(a[i])=6 get(i)=6
+ i=7 a[i]=8 ord(a[i])=7 get(i)=8
+ i=8 a[i]=9 ord(a[i])=8 get(i)=9
+4 4 4 5 6 6 8 9
 
 
 ------------------
