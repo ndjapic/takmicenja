@@ -51,7 +51,7 @@ end;
 
 function th_rotate(u, v: int32): int32;
 begin
-    if v > 0 then begin
+    {if v > 0 then} begin
         if th.a[u].l = v then begin
             th.a[u].l := th.a[v].r;
             th.a[v].r := u;
@@ -86,9 +86,7 @@ var
     vl, vr: int32;
 begin
     if u > 0 then begin
-        if th.a[u].n = 1 then begin
-            if th.a[u].x = x then u := 0;
-        end else begin
+        if th.a[u].n > 1 then begin
             vl := th.a[u].l;
             vr := th.a[u].r;
             if x < th.a[u].x then begin
@@ -105,7 +103,8 @@ begin
                 u := vr;
             end;
             th_update(u);
-        end;
+        end else if th.a[u].x = x then
+            u := 0; (* THIS DELETES NODE *)
     end;
     th_delete := u;
 end;
@@ -182,7 +181,7 @@ end.
 (*
 9
 4 6 8 9 5 6 4 5 4
- root=6
+ root=8
  i=1 a[i]=4 ord(a[i])=3 get(i)=4
  i=2 a[i]=6 ord(a[i])=7 get(i)=4
  i=3 a[i]=8 ord(a[i])=8 get(i)=4
@@ -192,8 +191,8 @@ end.
  i=7 a[i]=4 ord(a[i])=3 get(i)=6
  i=8 a[i]=5 ord(a[i])=5 get(i)=8
  i=9 a[i]=4 ord(a[i])=3 get(i)=9
- [ [ [4 [4 [4] ] ] 5] 6 [ [6 [8] ] 9] ] 
- root=6
+ [ [4 [ [4] 4 [ [5 [6] ] 6 [8] ] ] ] 9] 
+ root=4
  i=1 a[i]=4 ord(a[i])=3 get(i)=4
  i=2 a[i]=4 ord(a[i])=3 get(i)=4
  i=3 a[i]=4 ord(a[i])=3 get(i)=4
