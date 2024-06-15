@@ -18,7 +18,7 @@ end;
 
 function ncr(n, r: int32): int32;
 begin
-    ncr := int64(invf[r]) * invf[n-r] mod prime * fact[n] mod prime
+    ncr := int64(invf[r]) * invf[n-r] mod prime * fact[n] mod prime;
 end;
 
 procedure modinc(var a: int32; b: int32);
@@ -39,4 +39,4 @@ begin
     invf[maxn] := modpow(fact[maxn], prime - 2);
     for n := maxn downto 1 do invf[n-1] := int64(n) * invf[n] mod prime;
 
-end;
+end.
