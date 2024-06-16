@@ -7,9 +7,9 @@ var
         n: int32;
     end;
 
-function prior(x, y: int32): boolean;
+function prior(l, r: int32): boolean;
 begin
-    prior := x < y;
+    prior := l < r;
 end;
 
 procedure pqins(v, x: int32);
