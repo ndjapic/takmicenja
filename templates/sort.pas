@@ -7,61 +7,61 @@ var
     n, i: int32;
     a, p, merge: tarr32;
 
-function msort(l, r: int32; inversions: int64): int64;
+function msort(lend, rend: int32; inversions: int64): int64;
 var
-    m, i, j, k: int32;
+    i, l, r, m: int32;
 begin
-    if r-l > 1 then begin
+    if rend - lend > 1 then begin
 
-        m := (l+r) div 2;
-        inversions := msort(l, m, inversions);
-        inversions := msort(m, r, inversions);
+        m := (lend + rend) div 2;
+        inversions := msort(lend, m, inversions);
+        inversions := msort(m, rend, inversions);
 
-        j := l;
-        k := m;
-        for i := l to r-1 do
-            if (k = r) or (j < m) and (a[j] <= a[k]) then begin
-                merge[i] := a[j];
-                inc(j);
+        l := lend;
+        r := m;
+        for i := lend to rend - 1 do
+            if (r = rend) or (l < m) and (a[l] <= a[r]) then begin
+                merge[i] := a[l];
+                inc(l);
             end else begin
-                merge[i] := a[k];
-                inc(inversions, m-j);
-                inc(k);
+                merge[i] := a[r];
+                inc(inversions, m-l);
+                inc(r);
             end;
 
-        for i := l to r-1 do a[i] := merge[i];
+        for i := lend to rend - 1 do a[i] := merge[i];
 
     end;
     msort := inversions;
 end;
 
-procedure msorti(var indices, priority: tarr32; l, r: int32);
+procedure msorti(var indices, priority: tarr32; lend, rend: int32);
 var
-    m, i, j, k: int32;
+    i, l, r, m: int32;
 begin
-    if r-l > 1 then begin
+    if rend - lend > 1 then begin
 
-        m := (l+r) div 2;
-        msorti(indices, priority, l, m);
-        msorti(indices, priority, m, r);
+        m := (lend + rend) div 2;
+        msorti(indices, priority, lend, m);
+        msorti(indices, priority, m, rend);
 
-        j := l;
-        k := m;
-        for i := l to r-1 do
-            if (k = r) or (j < m) and (
-                (priority[indices[j]] >= priority[indices[k]]) {and (
-                    (priority[indices[j]] > priority[indices[k]]) or
-                    (indices[j] <= indices[k])
+        l := lend;
+        r := m;
+        for i := lend to rend - 1 do
+            if (r = rend) or (l < m) and (
+                (priority[indices[l]] >= priority[indices[r]]) {and (
+                    (priority[indices[l]] > priority[indices[r]]) or
+                    (indices[l] <= indices[r])
                 )}
             ) then begin
-                merge[i] := indices[j];
-                inc(j);
+                merge[i] := indices[l];
+                inc(l);
             end else begin
-                merge[i] := indices[k];
-                inc(k);
+                merge[i] := indices[r];
+                inc(r);
             end;
 
-        for i := l to r-1 do indices[i] := merge[i];
+        for i := lend to rend - 1 do indices[i] := merge[i];
 
     end;
 end;
