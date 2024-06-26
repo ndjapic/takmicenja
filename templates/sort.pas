@@ -96,5 +96,5 @@ begin
     end;
     readln;
 
-    msorti(p, a, 1, n);
+    msorti(p, a, 1, n+1);
 end.
