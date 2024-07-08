@@ -97,7 +97,7 @@ begin
     setlength(merge, n);
     setlength(p, n);
 
-    for i := 1 to n do begin
+    for i := 0 to n-1 do begin
         read(a[i]);
         p[i] := i;
     end;
