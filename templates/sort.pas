@@ -1,8 +1,9 @@
 program sort;
+{$mode objfpc}{$h+}{$j-}
 const
     maxn = 200 * 1000;
 type
-    tarr32 = array [1 .. maxn] of int32;
+    tarr32 = array of int32;
 var
     n, i: int32;
     a, p, merge: tarr32;
@@ -11,10 +12,13 @@ function msort(lend, rend: int32; inversions: int64): int64;
 var
     i, l, r, m: int32;
 begin
-    if rend - lend > 1 then begin
+    i := lend + 1;
+    while (i < rend) and (a[i-1] <= a[i]) do inc(i);
+
+    if i < rend then begin
 
         m := (lend + rend) div 2;
-        inversions := msort(lend, m, inversions);
+        if i < m then inversions := msort(lend, m, inversions);
         inversions := msort(m, rend, inversions);
 
         l := lend;
@@ -89,6 +93,9 @@ end;
 
 begin
     readln(n);
+    setlength(a, n);
+    setlength(merge, n);
+    setlength(p, n);
 
     for i := 1 to n do begin
         read(a[i]);
@@ -96,5 +103,5 @@ begin
     end;
     readln;
 
-    msorti(p, a, 1, n+1);
+    msorti(p, a, 0, n);
 end.
