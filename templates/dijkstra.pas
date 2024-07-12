@@ -7,20 +7,13 @@ program dijkstra;
 const
     nn = 100 * 1000;
     inf = 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
-type
-	tpath = record
-		v: int32;
-		d: int64;
-	end;
 var
-    n, m, i, u, v, s, k: int32;
-    du: int64;
-    p: tpath;
-    adj, par, wei, ans: array [1 .. nn] of int32;
+    n, m, i, u, v, s, t, k: int32;
+    adj, par, wei, p, ans: array [1 .. nn] of int32;
     d: array [1 .. nn] of int64;
     sib, tar: array [-nn .. nn] of int32;
     pq: record
-        a: array of tpath;
+        a: array of int32;
         n: int32;
     end;
 
@@ -44,12 +37,12 @@ begin
     end;
 end;
 
-function prior(l, r: tpath): boolean;
+function prior(l, r: int32): boolean;
 begin
-    prior := l.d < r.d;
+    prior := d[l] < d[r];
 end;
 
-procedure pqins(v: int32; x: tpath);
+procedure pqins(v: int32; x: int32);
 (* Usage: pqins(pq.n+1, x); *)
 var
     u: int32;
@@ -57,10 +50,12 @@ begin
     u := v div 2;
     if (v > 1) and prior(x, pq.a[u]) then begin
         pq.a[v] := pq.a[u];
+        p[pq.a[v]] := v;
         pqins(u, x);
     end else begin
 		if length(pq.a) <= v then setlength(pq.a, 2*v);
         pq.a[v] := x;
+        p[x] := v;
         inc(pq.n);
     end;
 end;
@@ -74,52 +69,50 @@ begin
     if (v+1 <= pq.n-1) and prior(pq.a[v+1], pq.a[v]) then inc(v);
     if (v <= pq.n-1) and prior(pq.a[v], pq.a[pq.n]) then begin
         pq.a[u] := pq.a[v];
+        p[pq.a[u]] := u;
         pqdel(v);
     end else begin
         pq.a[u] := pq.a[pq.n];
+        p[pq.a[u]] := u;
         dec(pq.n);
     end;
 end;
 
 begin
-    readln(n, m); (* m := n-1; (tree) *)
+    readln(n, m);
     readedges(n, m);
 
 	setlength(pq.a, 1);
 	for v := 1 to n do d[v] := inf;
 	s := 1;
-	par[s] := 0;
 	d[s] := 0;
-	p.v := s;
-	p.d := d[s];
     pq.n := 0;
-    pqins(1 + pq.n, p);
+    for v := 1 to n do pqins(1 + pq.n, v);
 
 	while pq.n > 0 do begin
 
-		u := pq.a[1].v;
-		du := pq.a[1].d;
+		u := pq.a[1];
 		pqdel(1);
 
 		i := adj[u];
 		while i <> 0 do begin
-			p.v := tar[i];
-			if d[p.v] > du + wei[abs(i)] then begin
-				par[p.v] := u;
-				d[p.v] := du + wei[abs(i)];
-				p.d := d[p.v];
-				pqins(1 + pq.n, p);
+			v := tar[i];
+			if d[v] > d[u] + wei[abs(i)] then begin
+                par[v] := u;
+				d[v] := d[u] + wei[abs(i)];
+				pqins(p[v], v);
+                dec(pq.n);
 			end;
 			i := sib[i];
 		end;
 
 	end;
 
-	{for v := 1 to n do writeln(' v=',v, ' d=',d[v], ' par=',par[v]);}
+    t := n;
 	k := 1;
-	if d[n] < inf then begin
-		ans[k] := n;
-		while ans[k] <> 1 do begin
+	if d[t] < inf then begin
+		ans[k] := t;
+		while ans[k] <> s do begin
 			inc(k);
 			ans[k] := par[ans[k-1]];
 		end;
