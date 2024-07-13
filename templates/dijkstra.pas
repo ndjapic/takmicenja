@@ -4,39 +4,51 @@ program dijkstra;
 * It is possible that the graph has loops
 * and multiple edges between pair of vertices.
 *)
+{$mode objfpc}
+uses
+    classes;
 const
     nn = 100 * 1000;
     inf = 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
+
+type generic TPrioQueue<T> = class
+public
+    a: array of T;
+    n: int32;
+    constructor Create();
+    function prior(l, r: T): boolean;
+    procedure pqset(v: int32; x: T);
+    procedure swim(v: int32; x: T);
+    procedure enqueue(x: T);
+    procedure sink(u: int32; x: T);
+    procedure dequeue(u: int32);
+end;
+
 var
     n, m, i, u, v, s, t, k: int32;
     adj, par, wei, pos, rev: array [1 .. nn] of int32;
     d: array [1 .. nn] of int64;
     sib, tar: array [-nn .. nn] of int32;
+    pq: specialize TPrioQueue<int32>;
 
-generic class TPrioQueue<T>{
-public
-
-    a: array of T;
-    n: int32;
-
-    constructor Create();
+    constructor TPrioQueue.Create();
     begin
         setlength(a, 1);
         n := 0;
     end;
 
-    function prior(l, r: T): boolean;
+    function TPrioQueue.prior(l, r: T): boolean;
     begin
         prior := d[l] < d[r];
     end;
 
-    procedure pqset(v: int32; x: T);
+    procedure TPrioQueue.pqset(v: int32; x: T);
     begin
         pq.a[v] := x;
         pos[x] := v;
     end;
 
-    procedure swim(v: int32; x: T);
+    procedure TPrioQueue.swim(v: int32; x: T);
     var
         u: int32;
     begin
@@ -49,14 +61,14 @@ public
         pqset(v, x);
     end;
 
-    procedure enqueue(x: T);
+    procedure TPrioQueue.enqueue(x: T);
     begin
         inc(pq.n);
     	if length(pq.a) <= pq.n then setlength(pq.a, 2 * pq.n);
         swim(pq.n, x);
     end;
 
-    procedure sink(u: int32; x: T);
+    procedure TPrioQueue.sink(u: int32; x: T);
     var
         v: int32;
     begin
@@ -71,15 +83,12 @@ public
         pqset(u, x);
     end;
 
-    procedure dequeue(u: int32);
+    procedure TPrioQueue.dequeue(u: int32);
     begin
         dec(pq.n);
         sink(u, pq.a[pq.n + 1]);
     end;
-}
-
-var
-    pq: TPrioQueue<int32>;
+end;
 
 procedure addarrow(u, v, i: int32);
 begin
