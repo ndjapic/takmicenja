@@ -11,25 +11,27 @@ const
     nn = 100 * 1000;
     inf = 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
 
-type generic TPrioQueue<T> = class
-public
-    a: array of T;
-    n: int32;
-    constructor Create();
-    function prior(l, r: T): boolean;
-    procedure pqset(v: int32; x: T);
-    procedure swim(v: int32; x: T);
-    procedure enqueue(x: T);
-    procedure sink(u: int32; x: T);
-    procedure dequeue(u: int32);
-end;
+type
+    generic TPrioQueue<T> = class
+    public
+        a: array of T;
+        n: int32;
+        constructor Create();
+        function prior(l, r: T): boolean;
+        procedure pqset(v: int32; x: T);
+        procedure swim(v: int32; x: T);
+        procedure enqueue(x: T);
+        procedure sink(u: int32; x: T);
+        procedure dequeue(u: int32);
+    end;
+    TPrioQueue32 = specialize TPrioQueue<int32>;
 
 var
     n, m, i, u, v, s, t, k: int32;
     adj, par, wei, pos, rev: array [1 .. nn] of int32;
     d: array [1 .. nn] of int64;
     sib, tar: array [-nn .. nn] of int32;
-    pq: specialize TPrioQueue<int32>;
+    pq: TPrioQueue32;
 
     constructor TPrioQueue.Create();
     begin
@@ -88,7 +90,6 @@ var
         dec(pq.n);
         sink(u, pq.a[pq.n + 1]);
     end;
-end;
 
 procedure addarrow(u, v, i: int32);
 begin
@@ -117,7 +118,7 @@ begin
 	for v := 1 to n do d[v] := inf;
 	s := 1;
 	d[s] := 0;
-    pq := TPrioQueue.Create();
+    pq := TPrioQueue32.Create();
     for v := 1 to n do pq.enqueue(v);
 
 	while pq.n > 0 do begin
