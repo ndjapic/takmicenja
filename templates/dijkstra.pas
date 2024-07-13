@@ -7,9 +7,11 @@ program dijkstra;
 const
     nn = 100 * 1000;
     inf = 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
+type
+    tpq = int32;
 var
     n, m, i, u, v, s, t, k: int32;
-    adj, par, wei, p, ans: array [1 .. nn] of int32;
+    adj, par, wei, pos, rev: array [1 .. nn] of int32;
     d: array [1 .. nn] of int64;
     sib, tar: array [-nn .. nn] of int32;
     pq: record
@@ -37,45 +39,56 @@ begin
     end;
 end;
 
-function prior(l, r: int32): boolean;
+function prior(l, r: tpq): boolean;
 begin
     prior := d[l] < d[r];
 end;
 
-procedure pqins(v: int32; x: int32);
-(* Usage: pqins(pq.n+1, x); *)
+procedure pqset(v: int32; x: tpq);
+begin
+    pq.a[v] := x;
+    pos[x] := v;
+end;
+
+procedure pqswim(v: int32; x: tpq);
 var
     u: int32;
 begin
     u := v div 2;
-    if (v > 1) and prior(x, pq.a[u]) then begin
-        pq.a[v] := pq.a[u];
-        p[pq.a[v]] := v;
-        pqins(u, x);
-    end else begin
-		if length(pq.a) <= v then setlength(pq.a, 2*v);
-        pq.a[v] := x;
-        p[x] := v;
-        inc(pq.n);
+    while (v > 1) and prior(x, pq.a[u]) do begin
+        pqset(v, pq.a[u]);
+        v := u;
+        u := v div 2;
     end;
+    pqset(v, x);
 end;
 
-procedure pqdel(u: int32);
-(* Usage: pqdel(1); *)
+procedure pqins(x: tpq);
+begin
+    inc(pq.n);
+	if length(pq.a) <= pq.n then setlength(pq.a, 2 * pq.n);
+    pqswim(pq.n, x);
+end;
+
+procedure pqsink(u: int32, x: tpq);
 var
     v: int32;
 begin
     v := u * 2;
-    if (v+1 <= pq.n-1) and prior(pq.a[v+1], pq.a[v]) then inc(v);
-    if (v <= pq.n-1) and prior(pq.a[v], pq.a[pq.n]) then begin
-        pq.a[u] := pq.a[v];
-        p[pq.a[u]] := u;
-        pqdel(v);
-    end else begin
-        pq.a[u] := pq.a[pq.n];
-        p[pq.a[u]] := u;
-        dec(pq.n);
+    if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
+    while (v <= pq.n) and prior(pq.a[v], x) do begin
+        pqset(u, pq.a[v]);
+        u := v;
+        v := u * 2;
+        if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
     end;
+    pqset(u, x);
+end;
+
+procedure pqdel(u: int32);
+begin
+    dec(pq.n);
+    pqsink(u, pq.a[pq.n + 1]);
 end;
 
 begin
@@ -87,7 +100,7 @@ begin
 	s := 1;
 	d[s] := 0;
     pq.n := 0;
-    for v := 1 to n do pqins(1 + pq.n, v);
+    for v := 1 to n do pqins(v);
 
 	while pq.n > 0 do begin
 
@@ -100,8 +113,7 @@ begin
 			if d[v] > d[u] + wei[abs(i)] then begin
                 par[v] := u;
 				d[v] := d[u] + wei[abs(i)];
-				pqins(p[v], v);
-                dec(pq.n);
+				pqswim(pos[v], v);
 			end;
 			i := sib[i];
 		end;
@@ -111,14 +123,14 @@ begin
     t := n;
 	k := 1;
 	if d[t] < inf then begin
-		ans[k] := t;
-		while ans[k] <> s do begin
+		rev[k] := t;
+		while rev[k] <> s do begin
 			inc(k);
-			ans[k] := par[ans[k-1]];
+			rev[k] := par[rev[k-1]];
 		end;
-		for i := k downto 2 do write(ans[i], ' ');
+		for i := k downto 2 do write(rev[i], ' ');
 	end else
-		ans[1] := -1;
+		rev[1] := -1;
 
-	writeln(ans[1]);
+	writeln(rev[1]);
 end.
