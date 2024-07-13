@@ -4,19 +4,91 @@ program dijkstra;
 * It is possible that the graph has loops
 * and multiple edges between pair of vertices.
 *)
+{$mode objfpc}
+uses
+    classes;
 const
     nn = 100 * 1000;
     inf = 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
+
 type
-    tpq = int32;
+    generic TPrioQueue<T> = class
+    public
+        a: array of T;
+        n: int32;
+        constructor Create();
+        function prior(l, r: T): boolean;
+        procedure pqset(v: int32; x: T);
+        procedure swim(v: int32; x: T);
+        procedure enqueue(x: T);
+        procedure sink(u: int32; x: T);
+        procedure dequeue(u: int32);
+    end;
+    TPrioQueue32 = specialize TPrioQueue<int32>;
+
 var
     n, m, i, u, v, s, t, k: int32;
     adj, par, wei, pos, rev: array [1 .. nn] of int32;
     d: array [1 .. nn] of int64;
     sib, tar: array [-nn .. nn] of int32;
-    pq: record
-        a: array of int32;
-        n: int32;
+    pq: TPrioQueue32;
+
+    constructor TPrioQueue.Create();
+    begin
+        setlength(a, 1);
+        n := 0;
+    end;
+
+    function TPrioQueue.prior(l, r: T): boolean;
+    begin
+        prior := d[l] < d[r];
+    end;
+
+    procedure TPrioQueue.pqset(v: int32; x: T);
+    begin
+        pq.a[v] := x;
+        pos[x] := v;
+    end;
+
+    procedure TPrioQueue.swim(v: int32; x: T);
+    var
+        u: int32;
+    begin
+        u := v div 2;
+        while (v > 1) and prior(x, pq.a[u]) do begin
+            pqset(v, pq.a[u]);
+            v := u;
+            u := v div 2;
+        end;
+        pqset(v, x);
+    end;
+
+    procedure TPrioQueue.enqueue(x: T);
+    begin
+        inc(pq.n);
+    	if length(pq.a) <= pq.n then setlength(pq.a, 2 * pq.n);
+        swim(pq.n, x);
+    end;
+
+    procedure TPrioQueue.sink(u: int32; x: T);
+    var
+        v: int32;
+    begin
+        v := u * 2;
+        if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
+        while (v <= pq.n) and prior(pq.a[v], x) do begin
+            pqset(u, pq.a[v]);
+            u := v;
+            v := u * 2;
+            if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
+        end;
+        pqset(u, x);
+    end;
+
+    procedure TPrioQueue.dequeue(u: int32);
+    begin
+        dec(pq.n);
+        sink(u, pq.a[pq.n + 1]);
     end;
 
 procedure addarrow(u, v, i: int32);
@@ -39,73 +111,20 @@ begin
     end;
 end;
 
-function prior(l, r: tpq): boolean;
-begin
-    prior := d[l] < d[r];
-end;
-
-procedure pqset(v: int32; x: tpq);
-begin
-    pq.a[v] := x;
-    pos[x] := v;
-end;
-
-procedure pqswim(v: int32; x: tpq);
-var
-    u: int32;
-begin
-    u := v div 2;
-    while (v > 1) and prior(x, pq.a[u]) do begin
-        pqset(v, pq.a[u]);
-        v := u;
-        u := v div 2;
-    end;
-    pqset(v, x);
-end;
-
-procedure pqins(x: tpq);
-begin
-    inc(pq.n);
-	if length(pq.a) <= pq.n then setlength(pq.a, 2 * pq.n);
-    pqswim(pq.n, x);
-end;
-
-procedure pqsink(u: int32; x: tpq);
-var
-    v: int32;
-begin
-    v := u * 2;
-    if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
-    while (v <= pq.n) and prior(pq.a[v], x) do begin
-        pqset(u, pq.a[v]);
-        u := v;
-        v := u * 2;
-        if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
-    end;
-    pqset(u, x);
-end;
-
-procedure pqdel(u: int32);
-begin
-    dec(pq.n);
-    pqsink(u, pq.a[pq.n + 1]);
-end;
-
 begin
     readln(n, m);
     readedges(n, m);
 
-	setlength(pq.a, 1);
 	for v := 1 to n do d[v] := inf;
 	s := 1;
 	d[s] := 0;
-    pq.n := 0;
-    for v := 1 to n do pqins(v);
+    pq := TPrioQueue32.Create();
+    for v := 1 to n do pq.enqueue(v);
 
 	while pq.n > 0 do begin
 
 		u := pq.a[1];
-		pqdel(1);
+		pq.dequeue(1);
 
 		i := adj[u];
 		while i <> 0 do begin
@@ -113,7 +132,7 @@ begin
 			if d[v] > d[u] + wei[abs(i)] then begin
                 par[v] := u;
 				d[v] := d[u] + wei[abs(i)];
-				pqswim(pos[v], v);
+				pq.swim(pos[v], v);
 			end;
 			i := sib[i];
 		end;
