@@ -70,7 +70,7 @@ begin
     pqswim(pq.n, x);
 end;
 
-procedure pqsink(u: int32, x: tpq);
+procedure pqsink(u: int32; x: tpq);
 var
     v: int32;
 begin
