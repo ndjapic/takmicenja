@@ -18,21 +18,20 @@ type
         n: int32;
         constructor Create();
         function prior(l, r: T): boolean;
-        procedure pqset(v: int32; x: T);
+        procedure set_a(v: int32; x: T);
         procedure swim(v: int32; x: T);
         procedure enqueue(x: T);
         procedure sink(u: int32; x: T);
         procedure dequeue(u: int32);
     end;
-    {TPrioQueue32 = specialize TPrioQueue<int32>;}
+    TPrioQueue32 = specialize TPrioQueue<int32>;
 
 var
     n, m, i, u, v, s, t, k: int32;
     adj, par, wei, pos, rev: array [1 .. nn] of int32;
     d: array [1 .. nn] of int64;
     sib, tar: array [-nn .. nn] of int32;
-    {pq: TPrioQueue32;}
-    pq: specialize TPrioQueue<int32>;
+    pq: TPrioQueue32;
 
 constructor TPrioQueue.Create();
 begin
@@ -45,7 +44,7 @@ begin
     prior := d[l] < d[r];
 end;
 
-procedure TPrioQueue.pqset(v: int32; x: T);
+procedure TPrioQueue.set_a(v: int32; x: T);
 begin
     a[v] := x;
     pos[x] := v;
@@ -57,17 +56,17 @@ var
 begin
     u := v div 2;
     while (v > 1) and prior(x, a[u]) do begin
-        pqset(v, a[u]);
+        set_a(v, a[u]);
         v := u;
         u := v div 2;
     end;
-    pqset(v, x);
+    set_a(v, x);
 end;
 
 procedure TPrioQueue.enqueue(x: T);
 begin
     inc(n);
-    if length(a) <= pq.n then setlength(a, 2*n);
+    if length(a) <= n then setlength(a, 2*n);
     swim(n, x);
 end;
 
@@ -78,18 +77,18 @@ begin
     v := u * 2;
     if (v+1 <= n) and prior(a[v+1], a[v]) then inc(v);
     while (v <= n) and prior(a[v], x) do begin
-        pqset(u, a[v]);
+        set_a(u, a[v]);
         u := v;
         v := u * 2;
         if (v+1 <= n) and prior(a[v+1], a[v]) then inc(v);
     end;
-    pqset(u, x);
+    set_a(u, x);
 end;
 
 procedure TPrioQueue.dequeue(u: int32);
 begin
-    dec(pq.n);
-    sink(u, a[pq.n + 1]);
+    dec(n);
+    sink(u, a[n+1]);
 end;
 
 procedure addarrow(u, v, i: int32);
