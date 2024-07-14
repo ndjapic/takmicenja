@@ -18,7 +18,7 @@ type
         n: int32;
         constructor Create();
         function prior(l, r: T): boolean;
-        procedure pqset(v: int32; x: T);
+        procedure set_a(v: int32; x: T);
         procedure swim(v: int32; x: T);
         procedure enqueue(x: T);
         procedure sink(u: int32; x: T);
@@ -33,63 +33,63 @@ var
     sib, tar: array [-nn .. nn] of int32;
     pq: TPrioQueue32;
 
-    constructor TPrioQueue.Create();
-    begin
-        setlength(a, 1);
-        n := 0;
-    end;
+constructor TPrioQueue.Create();
+begin
+    setlength(a, 1);
+    n := 0;
+end;
 
-    function TPrioQueue.prior(l, r: T): boolean;
-    begin
-        prior := d[l] < d[r];
-    end;
+function TPrioQueue.prior(l, r: T): boolean;
+begin
+    prior := d[l] < d[r];
+end;
 
-    procedure TPrioQueue.pqset(v: int32; x: T);
-    begin
-        pq.a[v] := x;
-        pos[x] := v;
-    end;
+procedure TPrioQueue.set_a(v: int32; x: T);
+begin
+    a[v] := x;
+    pos[x] := v;
+end;
 
-    procedure TPrioQueue.swim(v: int32; x: T);
-    var
-        u: int32;
-    begin
+procedure TPrioQueue.swim(v: int32; x: T);
+var
+    u: int32;
+begin
+    u := v div 2;
+    while (v > 1) and prior(x, a[u]) do begin
+        set_a(v, a[u]);
+        v := u;
         u := v div 2;
-        while (v > 1) and prior(x, pq.a[u]) do begin
-            pqset(v, pq.a[u]);
-            v := u;
-            u := v div 2;
-        end;
-        pqset(v, x);
     end;
+    set_a(v, x);
+end;
 
-    procedure TPrioQueue.enqueue(x: T);
-    begin
-        inc(pq.n);
-    	if length(pq.a) <= pq.n then setlength(pq.a, 2 * pq.n);
-        swim(pq.n, x);
-    end;
+procedure TPrioQueue.enqueue(x: T);
+begin
+    inc(n);
+    if length(a) <= n then setlength(a, 2*n);
+    swim(n, x);
+end;
 
-    procedure TPrioQueue.sink(u: int32; x: T);
-    var
-        v: int32;
-    begin
+procedure TPrioQueue.sink(u: int32; x: T);
+var
+    v: int32;
+begin
+    v := u * 2;
+    if (v+1 <= n) and prior(a[v+1], a[v]) then inc(v);
+    while (v <= n) and prior(a[v], x) do begin
+        set_a(u, a[v]);
+        u := v;
         v := u * 2;
-        if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
-        while (v <= pq.n) and prior(pq.a[v], x) do begin
-            pqset(u, pq.a[v]);
-            u := v;
-            v := u * 2;
-            if (v+1 <= pq.n) and prior(pq.a[v+1], pq.a[v]) then inc(v);
-        end;
-        pqset(u, x);
+        if (v+1 <= n) and prior(a[v+1], a[v]) then inc(v);
     end;
+    set_a(u, x);
+end;
 
-    procedure TPrioQueue.dequeue(u: int32);
-    begin
-        dec(pq.n);
-        sink(u, pq.a[pq.n + 1]);
-    end;
+procedure TPrioQueue.dequeue(u: int32);
+begin
+    dec(n);
+    sink(u, a[n+1]);
+end;
 
 procedure addarrow(u, v, i: int32);
 begin
