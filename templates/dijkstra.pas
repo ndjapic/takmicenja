@@ -17,7 +17,7 @@ type
         n: int32;
         constructor Create();
         function prior(l, r: T): boolean;
-        procedure set_a(v: int32; x: T);
+        procedure setItem(v: int32; x: T);
         procedure swim(v: int32; x: T);
         procedure enqueue(x: T);
         procedure sink(u: int32; x: T);
@@ -74,7 +74,7 @@ var
     v: int32;
 begin
     v := u * 2;
-    if (v+1 <= n) and prior(items[v+1], a[v]) then inc(v);
+    if (v+1 <= n) and prior(items[v+1], items[v]) then inc(v);
     while (v <= n) and prior(items[v], x) do begin
         setItem(u, items[v]);
         u := v;
@@ -131,7 +131,7 @@ begin
 			if d[v] > d[u] + wei[abs(i)] then begin
                 par[v] := u;
 				d[v] := d[u] + wei[abs(i)];
-				pq.swim(inv[v], v);
+				pq.swim(pq.inv[v], v);
 			end;
 			i := sib[i];
 		end;
