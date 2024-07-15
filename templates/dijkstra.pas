@@ -5,8 +5,6 @@ program dijkstra;
 * and multiple edges between pair of vertices.
 *)
 {$mode objfpc}
-uses
-    classes;
 const
     nn = 100 * 1000;
     inf = 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
@@ -14,11 +12,12 @@ const
 type
     generic TPrioQueue<T> = class
     public
-        a: array of T;
+        items: array [1 .. nn] of T;
+        inv: array [1 .. nn] of int32;
         n: int32;
         constructor Create();
         function prior(l, r: T): boolean;
-        procedure set_a(v: int32; x: T);
+        procedure setItem(v: int32; x: T);
         procedure swim(v: int32; x: T);
         procedure enqueue(x: T);
         procedure sink(u: int32; x: T);
@@ -28,14 +27,14 @@ type
 
 var
     n, m, i, u, v, s, t, k: int32;
-    adj, par, wei, pos, rev: array [1 .. nn] of int32;
+    adj, par, wei, rev: array [1 .. nn] of int32;
     d: array [1 .. nn] of int64;
     sib, tar: array [-nn .. nn] of int32;
     pq: TPrioQueue32;
 
 constructor TPrioQueue.Create();
 begin
-    setlength(a, 1);
+    {setlength(items, 1);}
     n := 0;
 end;
 
@@ -44,10 +43,10 @@ begin
     prior := d[l] < d[r];
 end;
 
-procedure TPrioQueue.set_a(v: int32; x: T);
+procedure TPrioQueue.setItem(v: int32; x: T);
 begin
-    a[v] := x;
-    pos[x] := v;
+    items[v] := x;
+    inv[x] := v;
 end;
 
 procedure TPrioQueue.swim(v: int32; x: T);
@@ -55,18 +54,18 @@ var
     u: int32;
 begin
     u := v div 2;
-    while (v > 1) and prior(x, a[u]) do begin
-        set_a(v, a[u]);
+    while (v > 1) and prior(x, items[u]) do begin
+        setItem(v, items[u]);
         v := u;
         u := v div 2;
     end;
-    set_a(v, x);
+    setItem(v, x);
 end;
 
 procedure TPrioQueue.enqueue(x: T);
 begin
     inc(n);
-    if length(a) <= n then setlength(a, 2*n);
+    {if length(items) <= n then setlength(items, 2*n);}
     swim(n, x);
 end;
 
@@ -75,20 +74,20 @@ var
     v: int32;
 begin
     v := u * 2;
-    if (v+1 <= n) and prior(a[v+1], a[v]) then inc(v);
-    while (v <= n) and prior(a[v], x) do begin
-        set_a(u, a[v]);
+    if (v+1 <= n) and prior(items[v+1], items[v]) then inc(v);
+    while (v <= n) and prior(items[v], x) do begin
+        setItem(u, items[v]);
         u := v;
         v := u * 2;
-        if (v+1 <= n) and prior(a[v+1], a[v]) then inc(v);
+        if (v+1 <= n) and prior(items[v+1], items[v]) then inc(v);
     end;
-    set_a(u, x);
+    setItem(u, x);
 end;
 
 procedure TPrioQueue.dequeue(u: int32);
 begin
     dec(n);
-    sink(u, a[n+1]);
+    sink(u, items[n+1]);
 end;
 
 procedure addarrow(u, v, i: int32);
@@ -123,7 +122,7 @@ begin
 
 	while pq.n > 0 do begin
 
-		u := pq.a[1];
+		u := pq.items[1];
 		pq.dequeue(1);
 
 		i := adj[u];
@@ -132,7 +131,7 @@ begin
 			if d[v] > d[u] + wei[abs(i)] then begin
                 par[v] := u;
 				d[v] := d[u] + wei[abs(i)];
-				pq.swim(pos[v], v);
+				pq.swim(pq.inv[v], v);
 			end;
 			i := sib[i];
 		end;
