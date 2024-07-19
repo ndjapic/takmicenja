@@ -1,63 +1,115 @@
 program heapq;
+{$mode objfpc}{$h+}
 const
-    maxn = 200 * 1000;
-var
-    pq: record
-        a: array [1 .. maxn] of int32;
-        n: int32;
-    end;
+    nn = 100 * 1000;
 
-function prior(l, r: int32): boolean;
+type
+    generic TPrioQueue<T> = class
+    public
+        items: array of T;
+        n: int32;
+        constructor Create();
+        function prio(l, r: T): boolean;
+        procedure setItem(v: int32; x: T);
+        procedure swim(v: int32; x: T);
+        procedure enqueue(x: T);
+        function prioChild(u: int32): int32;
+        procedure sink(u: int32; x: T);
+        procedure dequeue(u: int32);
+    end;
+    TPrioQueue32 = specialize TPrioQueue<int32>;
+
+var
+    n, i: int32;
+    a: array [1 .. nn] of int32;
+    pq: TPrioQueue32;
+
+constructor TPrioQueue.Create();
 begin
-    prior := l < r;
+    setlength(items, 1);
+    n := 0;
 end;
 
-procedure pqins(v, x: int32);
-(* Usage: pqins(pq.n+1, x); *)
+function TPrioQueue.prio(l, r: T): boolean;
+begin
+    result := l < r;
+end;
+
+procedure TPrioQueue.setItem(v: int32; x: T);
+begin
+    items[v] := x;
+end;
+
+procedure TPrioQueue.swim(v: int32; x: T);
 var
     u: int32;
 begin
     u := v div 2;
-    if (v > 1) and prior(x, pq.a[u]) then begin
-        pq.a[v] := pq.a[u];
-        pqins(u, x);
-    end else begin
-        pq.a[v] := x;
-        inc(pq.n);
+    while (v > 1) and prio(x, items[u]) do begin
+        setItem(v, items[u]);
+        v := u;
+        u := v div 2;
     end;
+    setItem(v, x);
 end;
 
-procedure pqdel(u: int32);
-(* Usage: pqdel(1); *)
+procedure TPrioQueue.enqueue(x: T);
+begin
+    inc(n);
+    if length(items) <= n then setlength(items, 2*n);
+    swim(n, x);
+end;
+
+function TPrioQueue.prioChild(u: int32): int32;
 var
     v: int32;
 begin
     v := u * 2;
-    if (v+1 <= pq.n-1) and prior(pq.a[v+1], pq.a[v]) then inc(v);
-    if (v <= pq.n-1) and prior(pq.a[v], pq.a[pq.n]) then begin
-        pq.a[u] := pq.a[v];
-        pqdel(v);
-    end else begin
-        pq.a[u] := pq.a[pq.n];
-        dec(pq.n);
+    if (v+1 <= n) and prio(items[v+1], items[v]) then inc(v);
+    result := v;
+end;
+
+procedure TPrioQueue.sink(u: int32; x: T);
+var
+    v: int32;
+begin
+    v := prioChild(u);
+    while (v <= n) and prio(items[v], x) do begin
+        setItem(u, items[v]);
+        u := v;
+        v := prioChild(u);
     end;
+    setItem(u, x);
+end;
+
+procedure TPrioQueue.dequeue(u: int32);
+begin
+    if length(items) >= 4*n then setlength(items, 2*n);
+    dec(n);
+    sink(u, items[n+1]);
 end;
 
 begin
-    pq.n := 0;
-    pqins(1 + pq.n, 4);
-    pqins(1 + pq.n, 8);
-    pqins(1 + pq.n, 16);
-    pqins(1 + pq.n, 9);
-    pqins(1 + pq.n, 27);
-    pqins(1 + pq.n, 5);
-    pqins(1 + pq.n, 25);
+    readln(n);
+    pq := TPrioQueue32.Create();
 
-    while pq.n > 1 do begin
-        write(pq.a[1], ' ');
-        pqdel(1);
+    for i := 1 to n do begin
+        read(a[i]);
+        pq.enqueue(a[i]);
+        write(' ', a[i]);
     end;
+    readln;
+    writeln;
 
-    writeln(pq.a[1]);
-    pqdel(1);
+    for i := 1 to n do begin
+        a[i] := pq.items[1];
+        pq.dequeue(1);
+        write(' ', a[i]);
+    end;
+    writeln;
 end.
+
+(*
+10
+2 8 32 128 512 1024 256 64 16 4
+*)
