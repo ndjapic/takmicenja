@@ -17,12 +17,12 @@ type
         procedure sink(u: int32; x: T);
         procedure dequeue(u: int32);
     end;
-    TPrioQueue32 = specialize TPrioQueue<int32>;
+    iPrioQueue = specialize TPrioQueue<int32>;
 
 var
     n, i: int32;
     a: array [1 .. nn] of int32;
-    pq: TPrioQueue32;
+    pq: iPrioQueue;
 
 constructor TPrioQueue.Create();
 begin
@@ -91,7 +91,7 @@ end;
 
 begin
     readln(n);
-    pq := TPrioQueue32.Create();
+    pq := iPrioQueue.Create();
 
     for i := 1 to n do begin
         read(a[i]);
