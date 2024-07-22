@@ -1,23 +1,24 @@
+program Comparer;
 {$mode objfpc}{$H+}{$J-}
 uses
     Generics.Defaults, Generics.Collections;
 type
-    iList = specialize TList<int32>;
-    iComparer = specialize TComparer<int32>;
+    intList = specialize TList<int32>;
+    intComparer = specialize TComparer<int32>;
 var
-    a: iList;
+    a: intList;
 
-function iCompare(constref Left, Right: int32): int32;
+function intCompare(constref Left, Right: int32): int32;
 begin
     Result := Left - Right;
 end;
 
 begin
-    a := iList.Create();
+    a := intList.Create();
     a.Add(11);
     a.Add(33);
     a.Add(22);
-    a.Sort(iComparer.Construct(@iCompare));
+    a.Sort(intComparer.Construct(@intCompare));
 
     Writeln('Count: ', a.Count);
     Writeln(a[0]);
