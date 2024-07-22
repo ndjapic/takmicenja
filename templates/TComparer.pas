@@ -1,41 +1,26 @@
 {$mode objfpc}{$H+}{$J-}
-uses SysUtils, Generics.Defaults, Generics.Collections;
-
+uses
+    Generics.Defaults, Generics.Collections;
 type
-  TApple = class
-    Name: string;
-  end;
-  TAppleList = specialize TObjectList<TApple>;
-  TAppleComparer = specialize TComparer<TApple>;
+    iList = specialize TList<int32>;
+    iComparer = specialize TComparer<int32>;
 var
-  A: TApple;
-  L: TAppleList;
+    L: iList;
 
-function CompareApples(constref Left, Right: TApple): Integer;
+function Compare(constref Left, Right: int32): int32;
 begin
-  Result := AnsiCompareStr(Left.Name, Right.Name);
+    Result := Left - Right;
 end;
 
 begin
-  L := TAppleList.Create(true);
-  try
-    A := TApple.Create;
-    A.Name := '11';
-    L.Add(A);
-
-    A := TApple.Create;
-    A.Name := '33';
-    L.Add(A);
-
-    A := TApple.Create;
-    A.Name := '22';
-    L.Add(A);
-
-    L.Sort(TAppleComparer.Construct(@CompareApples));
+    L := iList.Create();
+    L.Add(11);
+    L.Add(33);
+    L.Add(22);
+    L.Sort(iComparer.Construct(@Compare));
 
     Writeln('Count: ', L.Count);
-    Writeln(L[0].Name);
-    Writeln(L[1].Name);
-    Writeln(L[2].Name);
-  finally FreeAndNil(L) end;
+    Writeln(L[0]);
+    Writeln(L[1]);
+    Writeln(L[2]);
 end.
