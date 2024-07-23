@@ -1,5 +1,7 @@
 program heapq;
 {$mode objfpc}{$h+}
+uses
+    Generics.Defaults;
 const
     nn = 100 * 1000;
 
@@ -9,7 +11,7 @@ type
         items: array of T;
         n: int32;
         constructor Create();
-        function prio(l, r: T): boolean;
+        function Compare(l, r: T): int32;
         procedure setItem(v: int32; x: T);
         procedure swim(v: int32; x: T);
         procedure enqueue(x: T);
@@ -30,9 +32,9 @@ begin
     n := 0;
 end;
 
-function TPrioQueue.prio(l, r: T): boolean;
+function TPrioQueue.Compare(l, r: T): int32;
 begin
-    result := l < r;
+    result := l - r;
 end;
 
 procedure TPrioQueue.setItem(v: int32; x: T);
@@ -44,11 +46,11 @@ procedure TPrioQueue.swim(v: int32; x: T);
 var
     u: int32;
 begin
-    u := v div 2;
-    while (v > 1) and prio(x, items[u]) do begin
+    u := (v-1) div 2;
+    while (v > 0) and (Compare(x, items[u]) < 0) do begin
         setItem(v, items[u]);
         v := u;
-        u := v div 2;
+        u := (v-1) div 2;
     end;
     setItem(v, x);
 end;
@@ -57,15 +59,15 @@ procedure TPrioQueue.enqueue(x: T);
 begin
     inc(n);
     if length(items) <= n then setlength(items, 2*n);
-    swim(n, x);
+    swim(n-1, x);
 end;
 
 function TPrioQueue.prioChild(u: int32): int32;
 var
     v: int32;
 begin
-    v := u * 2;
-    if (v+1 <= n) and prio(items[v+1], items[v]) then inc(v);
+    v := u * 2 + 1;
+    if (v+1 < n) and (Compare(items[v+1], items[v]) < 0) then inc(v);
     result := v;
 end;
 
@@ -74,7 +76,7 @@ var
     v: int32;
 begin
     v := prioChild(u);
-    while (v <= n) and prio(items[v], x) do begin
+    while (v < n) and (Compare(items[v], x) < 0) do begin
         setItem(u, items[v]);
         u := v;
         v := prioChild(u);
@@ -86,7 +88,7 @@ procedure TPrioQueue.dequeue(u: int32);
 begin
     if length(items) >= 4*n then setlength(items, 2*n);
     dec(n);
-    sink(u, items[n+1]);
+    sink(u, items[n]);
 end;
 
 begin
@@ -102,8 +104,8 @@ begin
     writeln;
 
     for i := 1 to n do begin
-        a[i] := pq.items[1];
-        pq.dequeue(1);
+        a[i] := pq.items[0];
+        pq.dequeue(0);
         write(' ', a[i]);
     end;
     writeln;
