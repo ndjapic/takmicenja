@@ -11,9 +11,16 @@ var
 function msort(lend, rend: int32; inversions: int64): int64;
 var
     i, l, r, m: int32;
+
+    function LessOrEqual(l, r: int32): boolean;
+    begin
+        {result := (a[l] <= a[r]) and ((a[l] < a[r]) or (l <= r));}
+        result := a[l] <= a[r];
+    end;
+
 begin
     i := lend + 1;
-    while (i < rend) and (a[i-1] <= a[i]) do inc(i);
+    while (i < rend) and LessOrEqual(i-1, i) do inc(i);
 
     if i < rend then begin
 
@@ -24,7 +31,7 @@ begin
         l := lend;
         r := m;
         for i := lend to rend - 1 do
-            if (r = rend) or (l < m) and (a[l] <= a[r]) then begin
+            if (r = rend) or (l < m) and LessOrEqual(l, r) then begin
                 merge[i] := a[l];
                 inc(l);
             end else begin
@@ -42,22 +49,27 @@ end;
 procedure msorti(var indices, priority: tarr32; lend, rend: int32);
 var
     i, l, r, m: int32;
+
+    function LessOrEqual(l, r: int32): boolean;
+    begin
+        result := (priority[l] <= priority[r]) and ((priority[l] < priority[r]) or (l <= r));
+        {result := priority[l] <= priority[r];}
+    end;
+
 begin
-    if rend - lend > 1 then begin
+    i := lend + 1;
+    while (i < rend) and LessOrEqual(indices[i-1], indices[i]) do inc(i);
+
+    if i < rend then begin
 
         m := (lend + rend) div 2;
-        msorti(indices, priority, lend, m);
+        if i < m then msorti(indices, priority, lend, m);
         msorti(indices, priority, m, rend);
 
         l := lend;
         r := m;
         for i := lend to rend - 1 do
-            if (r = rend) or (l < m) and (
-                (priority[indices[l]] >= priority[indices[r]]) {and (
-                    (priority[indices[l]] > priority[indices[r]]) or
-                    (indices[l] <= indices[r])
-                )}
-            ) then begin
+            if (r = rend) or (l < m) and LessOrEqual(indices[l], indices[r]) then begin
                 merge[i] := indices[l];
                 inc(l);
             end else begin
@@ -104,4 +116,11 @@ begin
     readln;
 
     msorti(p, a, 0, n);
+
+    for i := 0 to n-2 do write(a[p[i]], ' '); writeln(a[p[n-1]]);
 end.
+
+(*
+12
+16 32 64 27 81 16 64 25 36 49 64 81
+*)
