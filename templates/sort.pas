@@ -4,52 +4,65 @@ const
     maxn = 200 * 1000;
 type
     tarr32 = array of int32;
-    generic tlist<_t> = class
+    generic tcomparer<_t> = class
+    public
+        function LessOrEqual(lhs, rhs: _t): boolean;
+    end;
+    generic tlist<_t, _c> = class
     public
         items, items2: array of _t;
         count: sizeint;
         constructor create();
+        destructor destroy();
         procedure add(item: _t);
-        function LessOrEqual(l, r: _t): boolean;
         procedure MergeSort(lend, rend: sizeint);
         procedure sort();
+        function bisectr(x: _t): sizeint;
     end;
-    ilist = specialize tlist<int32>;
+    icomparer = specialize tcomparer<int32>;
+    ilist = specialize tlist<int32, icomparer>;
 
 var
     n, i: int32;
     a: ilist;
 
-procedure tlist<_t>.create();
+procedure tcomparer<_t>.LessOrEqual(lhs, rhs: _t): boolean;
+begin
+    result := lhs <= rhs;
+end;
+
+constructor tlist<_t, _c>.create();
 begin
     setlength(items, 1);
     count := 0;
 end;
 
-procedure tlist<_t>.add(item: _t);
+destructor tlist<_t, _c>.destroy();
+begin
+    setlength(items, 0);
+    setlength(items2, 0);
+    count := 0;
+end;
+
+procedure tlist<_t, _c>.add(item: _t);
 begin
     if length(items) <= count then setlength(items, 2 * count);
     items[count] := item;
     inc(count);
 end;
 
-procedure tlist<_t>.LessOrEqual(l, r: _t): boolean;
-begin
-    result := items[l] <= items[r];
-end;
-
-procedure tlist<_t>.MergeSort(lend, rend: sizeint);
+procedure tlist<_t, _c>.MergeSort(lend, rend: sizeint);
 var
     i, j, l, r, m: sizeint;
 
 begin
     i := lend + 1;
-    while (i < rend) and LessOrEqual(i, i-1) do inc(i);
+    while (i < rend) and _c.LessOrEqual(items[i-1], items[i]) do inc(i);
 
     if i < rend then begin
 
         j := lend + 1;
-        while (j < rend) and LessOrEqual(j-1, j) do inc(j);
+        while (j < rend) and _c.LessOrEqual(items[j], items[j-1]) do inc(j);
 
         if j = rend then begin
 
@@ -72,7 +85,7 @@ begin
             l := lend;
             r := m;
             for i := lend to rend - 1 do
-                if (r = rend) or (l < m) and LessOrEqual(l, r) then begin
+                if (r = rend) or (l < m) and _c.LessOrEqual(items[l], items[r]) then begin
                     items2[i] := items[l];
                     inc(l);
                 end else begin
@@ -85,10 +98,26 @@ begin
     end;
 end;
 
-procedure tlist<_t>.sort();
+procedure tlist<_t, _c>.sort();
 begin
-    setlength(items2, count);
+    if length(items2) < length(items) then setlength(items2, length(items));
     MergeSort(0, count);
+end;
+
+function tlist<_t, _c>.bisectr(x: _t): sizeint;
+var
+    l, r, m: sizeint;
+begin
+    l := -1;
+    r := count;
+    while r-l > 1 do begin
+        m := (l+r) div 2;
+        if _c.LessOrEqual(items[m], x) then
+            l := m
+        else
+            r := m;
+    end;
+    bisectr := r;
 end;
 
 procedure msort(lend, rend: int32);
