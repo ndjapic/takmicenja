@@ -279,7 +279,7 @@ end.}
 
 begin
     readln(n);
-    cmp := icomparer.create();
+    cmp := icomparer.create(); // Initialize the object by calling the class builder
     a := ilist.create();
 
     for i := 0 to n-1 do begin
@@ -289,10 +289,19 @@ begin
     readln;
 
     a.sort(cmp, false);
+    {Shorter version (cant free): a.sort(icomparer.create(), false);}
 
     for i := 0 to n-2 do write(a.items[i], ' ');
     writeln(a.items[n-1]);
-    a.free();
+
+    write(' | ', a.bisectr(-1, cmp), ': ', -1);
+    write(' | ', a.bisectr(0, cmp), ': ', 0);
+    write(' | ', a.bisectr(64, cmp), ': ', 64);
+    write(' | ', a.bisectr(81, cmp), ': ', 81);
+    write(' | ', a.bisectr(99, cmp), ': ', 99);
+    writeln;
+
+    a.free(); // Free invites your own class Destroy discharger
     cmp.free();
 end.
 
