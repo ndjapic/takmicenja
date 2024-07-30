@@ -13,10 +13,11 @@ type
         items, items2: array of _t;
         count: sizeint;
         constructor create();
-        destructor destroy();
+        destructor destroy(); override; // allows the use of a parent class destroyer
         procedure add(item: _t);
-        procedure MergeSort(lend, rend: sizeint; cmp: _c);
-        procedure sort(cmp: _c);
+        function isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean;
+        procedure MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
+        procedure sort(cmp: _c; stable: boolean);
         function bisectr(x: _t; cmp: _c): sizeint;
     end;
     icomparer = specialize tcomparer<int32>;
@@ -43,6 +44,7 @@ begin
     setlength(items, 0);
     setlength(items2, 0);
     count := 0;
+    inherited; // Also called parent class destroyer
 end;
 
 procedure tlist.add(item: _t);
@@ -52,9 +54,18 @@ begin
     inc(count);
 end;
 
-procedure tlist.MergeSort(lend, rend: sizeint; cmp: _c);
+function tlist.isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean;
 var
-    i, j, l, r, m: sizeint;
+    j: sizeInt;
+begin
+    j := lend + 1;
+    while (j < rend) and cmp.LessOrEqual(items[j], items[j-1]) do inc(j);
+    result := j = rend;
+end;
+
+procedure tlist.MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
+var
+    i, l, r, m: sizeint;
 
 begin
     i := lend + 1;
@@ -62,10 +73,7 @@ begin
 
     if i < rend then begin
 
-        j := lend + 1;
-        while (j < rend) and cmp.LessOrEqual(items[j], items[j-1]) do inc(j);
-
-        if j = rend then begin
+        if not stable and isNonIncreasing(lend, rend, cmp) then begin
 
             l := lend;
             r := rend - 1;
@@ -74,14 +82,14 @@ begin
                 items[l] := items[r];
                 items[r] := items2[l];
                 inc(l);
-                dec(l);
+                dec(r);
             end;
 
         end else begin
 
             m := (lend + rend) div 2;
-            if i < m then MergeSort(lend, m, cmp);
-            MergeSort(m, rend, cmp);
+            if i < m then MergeSort(lend, m, cmp, stable);
+            MergeSort(m, rend, cmp, stable);
 
             l := lend;
             r := m;
@@ -99,10 +107,10 @@ begin
     end;
 end;
 
-procedure tlist.sort(cmp: _c);
+procedure tlist.sort(cmp: _c; stable: boolean);
 begin
     if length(items2) < length(items) then setlength(items2, length(items));
-    MergeSort(0, count, cmp);
+    MergeSort(0, count, cmp, stable);
 end;
 
 function tlist.bisectr(x: _t; cmp: _c): sizeint;
@@ -280,10 +288,12 @@ begin
     end;
     readln;
 
-    a.sort(cmp);
+    a.sort(cmp, false);
 
     for i := 0 to n-2 do write(a.items[i], ' ');
     writeln(a.items[n-1]);
+    a.free();
+    cmp.free();
 end.
 
 (*
