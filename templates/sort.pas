@@ -60,7 +60,7 @@ var
 begin
     j := lend + 1;
     while (j < rend) and cmp.LessOrEqual(items[j], items[j-1]) do inc(j);
-    result := j = rend;
+    result := j >= rend;
 end;
 
 procedure tlist.MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
