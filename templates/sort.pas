@@ -1,12 +1,12 @@
 program sort;
-{$mode objfpc}{$h+}{$j-}
+{$mode objfpc}{$h+}{$j-}{$inline on}
 const
     maxn = 200 * 1000;
 type
     tarr32 = array of int32;
     generic tcomparer<_t> = class
     public
-        function LessOrEqual(lhs, rhs: _t): boolean;
+        function LessOrEqual(constref lhs, rhs: _t): boolean; inline;
     end;
     generic tlist<_t, _c> = class
     public
@@ -15,7 +15,7 @@ type
         constructor create();
         destructor destroy(); override; // allows the use of a parent class destroyer
         procedure add(item: _t);
-        function isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean;
+        function isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean; inline;
         procedure MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
         procedure sort(cmp: _c; stable: boolean);
         function bisectr(x: _t; cmp: _c): sizeint;
@@ -28,7 +28,7 @@ var
     cmp: icomparer;
     a: ilist;
 
-function tcomparer.LessOrEqual(lhs, rhs: _t): boolean;
+function tcomparer.LessOrEqual(constref lhs, rhs: _t): boolean; inline;
 begin
     result := lhs <= rhs;
 end;
@@ -54,7 +54,7 @@ begin
     inc(count);
 end;
 
-function tlist.isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean;
+function tlist.isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean; inline;
 var
     j: sizeInt;
 begin
