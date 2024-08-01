@@ -19,6 +19,7 @@ begin
   FArray[Index] := Value;
 end;
 
+
 type
   PNode = ^TNode;
   TNode = record
@@ -82,12 +83,12 @@ end;
 procedure Delete(var Root: PNode; Key: Integer);
 begin
   if Root = nil then
-    Exit;
+    {Exit;}
   if Key < Root^.Key then
     Delete(Root^.Left, Key)
   else if Key > Root^.Key then
     Delete(Root^.Right, Key)
-  else
+  else begin
     // Handle deletion logic, including rebalancing
     // ...
   end;
