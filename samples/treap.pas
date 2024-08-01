@@ -4,6 +4,23 @@ uses
     math;
 const
     th_size = 1000 * 1000;
+type
+    generic TComparer<_T> = class
+    public
+        function Compare(constref lhs, rhs: _T): SizeInt; inline;
+    end;
+    generic TNode<_T> = class
+        Left, Right: SizeInt;
+        Key: _T;
+    end;
+    TSortedArray<_T> = class
+    private
+        FCount: SizeInt;
+        FNodes: array of TNode;
+    public
+        property Count: SizeInt read FCount;
+        property Nodes[Index: SizeInt] read FNodes write FNodes;
+    end;
 var
     n, i: int32;
     randtime, a: array [1 .. th_size] of int32;
