@@ -5,22 +5,32 @@ uses
 const
     th_size = 1000 * 1000;
 type
-    generic TComparer<_T> = class
+    TComparer<_T> = class
     public
         function Compare(constref lhs, rhs: _T): SizeInt; inline;
     end;
-    generic TNode<_T> = class
-        Left, Right: SizeInt;
-        Key: _T;
+    PTreapNode = SizeInt;
+    TTreapNode<_T> = class
+        x: _T;
+        y, c: SizeInt;
+        l, r: PTreapNode;
     end;
     TSortedArray<_T> = class
     private
-        FCount: SizeInt;
-        FNodes: array of TNode;
+        Nodes: array of TNode;
+        function GetItem(Index: SizeInt): PTreapNode;
     public
-        property Count: SizeInt read FCount;
-        property Nodes[Index: SizeInt] read FNodes write FNodes;
+        constructor Create();
+        destructor Destroy(); override;
+        function NewNode(x: _T): PTreapNode;
+        procedure RotateRight(var Root: PTreapNode);
+        procedure RotateLeft(var Root: PTreapNode);
+        procedure FixHeap(var Root: PTreapNode);
+        procedure Insert(var Root: PTreapNode; x: _T);
+        function BisectRight(x: _T): PTreapNode;
+        property Item: PTreapNode read GetItem;
     end;
+
 var
     n, i: int32;
     randtime, a: array [1 .. th_size] of int32;
@@ -30,6 +40,85 @@ var
         end;
         n, root: int32;
     end;
+
+function TComparer.Compare(constref lhs, rhs: _T): SizeInt; inline;
+begin
+    Result := lhs - rhs;
+end;
+
+constructor TSortedArray.Create();
+begin
+    Randomize;
+    SetLength(Nodes, 1);
+    Nodes[0].x := Low(_T);
+    Nodes[0].y := High(SizeInt);
+    Nodes[0].c := 0;
+    Nodes[0].r := 0;
+end;
+
+destructor TSortedArray.Destroy();
+begin
+    SetLength(Nodes, 0);
+    inherited;
+end;
+
+function TSortedArray.NewNode(Key: Integer): PTreapNode;
+var
+    c, root: PTreapNode;
+begin
+    Result := Nodes[0].c + 1;
+    if Length(Nodes) <= Result then SetLength(Nodes, Result * 2);
+    Nodes[Result].x := x;
+    Nodes[Result].y := Random(High(SizeInt)); // Generate random priority
+    Nodes[Result].l := 0;
+    Nodes[Result].r := 0;
+    Nodes[0].c := Result;
+end;
+
+procedure TSortedArray.RotateRight(var Root: PTreapNode);
+var
+    l: PTreapNode;
+begin
+    l := Nodes[Root].l;
+    Nodes[Root].l := Nodes[l].r;
+    Nodes[l].r := Root;
+    Root := l;
+end;
+
+procedure TSortedArray.RotateLeft(var Root: PTreapNode);
+var
+    r: PTreapNode;
+begin
+    r := Nodes[Root].r;
+    Nodes[Root].r := Nodes[r].l;
+    Nodes[r].l := Root;
+    Root := r;
+end;
+
+procedure TSortedArray.FixHeap(var Root: PTreapNode);
+var
+    l, r: PTreapNode;
+    y: SizeInt;
+begin
+    l := Nodes[Root].l;
+    r := Nodes[Root].r;
+    y := Nodes[Root].y;
+    if (l > 0) and (Nodes[l].y > y) then RotateRight(Root);
+    if (r > 0) and (Nodes[r].y > y) then RotateLeft(Root);
+    FixHeap(l);
+    FixHeap(r);
+end;
+
+procedure TSortedArray.Insert(var Root: PTreapNode; x: _T);
+begin
+    if Root = 0 then
+        Root := NewNode(x)
+    else if x < Nodes[Root].x then
+        Insert(Nodes[Root].l, x);
+    else
+        Insert(Nodes[Root].r, x);
+    FixHeap(Root);
+end;
 
 procedure th_init();
 var
