@@ -70,6 +70,7 @@ begin
     if Length(Nodes) <= Result then SetLength(Nodes, Result * 2);
     Nodes[Result].x := x;
     Nodes[Result].y := Random(High(SizeInt)); // Generate random priority
+    Nodes[Result].c := 1;
     Nodes[Result].l := 0;
     Nodes[Result].r := 0;
     Nodes[0].c := Result;
@@ -82,6 +83,8 @@ begin
     l := Nodes[Root].l;
     Nodes[Root].l := Nodes[l].r;
     Nodes[l].r := Root;
+    Nodes[l].c := Nodes[Root].c;
+    dec(Nodes[Root].c, Nodes[Nodes[l].l].c);
     Root := l;
 end;
 
@@ -92,6 +95,8 @@ begin
     r := Nodes[Root].r;
     Nodes[Root].r := Nodes[r].l;
     Nodes[r].l := Root;
+    Nodes[r].c := Nodes[Root].c;
+    dec(Nodes[Root].c, Nodes[Nodes[r].r].c);
     Root := r;
 end;
 
@@ -117,6 +122,7 @@ begin
         Insert(Nodes[Root].l, x);
     else
         Insert(Nodes[Root].r, x);
+    Inc(Nodes[Root].c);
     FixHeap(Root);
 end;
 
