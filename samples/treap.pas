@@ -25,8 +25,8 @@ type
         constructor Create();
         destructor Destroy(); override;
         function NewNode(x: _T): PTreapNode;
-        procedure RotateRight(var Root: PTreapNode);
-        procedure RotateLeft(var Root: PTreapNode);
+        procedure RotateRight(var Root, l: PTreapNode); inline;
+        procedure RotateLeft(var Root, r: PTreapNode); inline;
         procedure FixHeap(var Root: PTreapNode);
         procedure Insert(var Root: PTreapNode; x: _T);
         function GetItem(Root: PTreapNode; Index: SizeInt): PTreapNode;
@@ -52,11 +52,11 @@ end;
 constructor TSortedArray.Create();
 begin
     Randomize;
-    SetLength(Nodes, 1);
-    Nodes[0].x := Low(_T);
-    Nodes[0].y := High(SizeInt);
-    Nodes[0].c := 0;
-    Nodes[0].r := SENTINEL;
+    SetLength(Nodes, max(0, SENTINEL) + 1);
+    Nodes[SENTINEL].x := Low(_T);
+    Nodes[SENTINEL].y := High(SizeInt);
+    Nodes[SENTINEL].c := 0;
+    Nodes[SENTINEL].r := SENTINEL;
 end;
 
 destructor TSortedArray.Destroy();
@@ -65,7 +65,7 @@ begin
     inherited;
 end;
 
-function TSortedArray.NewNode(Key: Integer): PTreapNode;
+function TSortedArray.NewNode(x: _T): PTreapNode;
 var
     c, root: PTreapNode;
 begin
@@ -79,11 +79,11 @@ begin
     Nodes[SENTINEL].c := Result;
 end;
 
-procedure TSortedArray.RotateRight(var Root: PTreapNode);
-var
-    l: PTreapNode;
+procedure TSortedArray.RotateRight(var Root, l: PTreapNode);
+{var
+    l: PTreapNode;}
 begin
-    l := Nodes[Root].l;
+    {l := Nodes[Root].l;}
     Nodes[Root].l := Nodes[l].r;
     Nodes[l].r := Root;
     Nodes[l].c := Nodes[Root].c;
@@ -91,11 +91,11 @@ begin
     Root := l;
 end;
 
-procedure TSortedArray.RotateLeft(var Root: PTreapNode);
-var
-    r: PTreapNode;
+procedure TSortedArray.RotateLeft(var Root, r: PTreapNode);
+{var
+    r: PTreapNode;}
 begin
-    r := Nodes[Root].r;
+    {r := Nodes[Root].r;}
     Nodes[Root].r := Nodes[r].l;
     Nodes[r].l := Root;
     Nodes[r].c := Nodes[Root].c;
@@ -111,8 +111,8 @@ begin
     l := Nodes[Root].l;
     r := Nodes[Root].r;
     y := Nodes[Root].y;
-    if (l <> SENTINEL) and (Nodes[l].y > y) then RotateRight(Root);
-    if (r <> SENTINEL) and (Nodes[r].y > y) then RotateLeft(Root);
+    if (l <> SENTINEL) and (Nodes[l].y > y) then RotateRight(Root, l);
+    if (r <> SENTINEL) and (Nodes[r].y > y) then RotateLeft(Root, r);
     FixHeap(l);
     FixHeap(r);
 end;
@@ -130,11 +130,11 @@ begin
         if x < Nodes[Root].x then begin
             l := Nodes[Root].l;
             Insert(l, x);
-            if Nodes[l].y > y then RotateRight(Root);
+            if Nodes[l].y > y then RotateRight(Root, l);
         end else begin
             r := Nodes[Root].r;
             Insert(r, x);
-            if Nodes[r].y > y then RotateRight(Root);
+            if Nodes[r].y > y then RotateLeft(Root, r);
         end;
     end;
     {FixHeap(Root);}
