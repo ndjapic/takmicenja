@@ -154,7 +154,7 @@ var
     l, r: PTreapNode;
     y: SizeInt;
 begin
-    if Root = 0 then
+    if Root = SENTINEL then
         Root := NewNode(x)
     else begin
         Inc(Nodes[Root].c);
@@ -174,22 +174,20 @@ end;
 
 procedure TSortedArray.Meld(var Root: PTreapNode);
 var
-    l, r, v: PTreapNode;
+    l, r: PTreapNode;
 begin
     if Root = SENTINEL then
     else begin
         l := Nodes[Root].l;
         r := Nodes[Root].r;
         if (r = SENTINEL) or (l <> SENTINEL) and (Nodes[l].y > Nodes[r].y) then begin
-            v := l;
             Meld(l);
+            Nodes[l].r := r;
             Root := l;
-            Nodes[v].r := r;
         end else begin
-            v := r
             Meld(r);
-            Root := r;
             Nodes[v].l := l;
+            Root := r;
         end;
     end;
 end;
@@ -211,7 +209,18 @@ begin
     end;
 end;
 
-function BisectRight(x: _T): PTreapNode;
+function TSortedArray.BisectRight(Root: PTreapNode; x: _T): SizeInt;
+var
+    l, r: PTreapNode;
+    y: SizeInt;
+begin
+    if Root = SENTINEL then
+        Result := 0
+    else if x < Nodes[Root].x then
+        Result := BisectRight(Nodes[Root].l, x)
+    else
+        Result := Nodes[l].c + 1 + BisectRight(Nodes[Root].r, x);
+end;
 
 procedure th_init();
 var
