@@ -115,15 +115,24 @@ begin
 end;
 
 procedure TSortedArray.Insert(var Root: PTreapNode; x: _T);
+var
+    l, r: PTreapNode;
 begin
     if Root = 0 then
         Root := NewNode(x)
-    else if x < Nodes[Root].x then
-        Insert(Nodes[Root].l, x);
-    else
-        Insert(Nodes[Root].r, x);
-    Inc(Nodes[Root].c);
-    FixHeap(Root);
+    else begin
+        Inc(Nodes[Root].c);
+        if x < Nodes[Root].x then begin
+            l := Nodes[Root].l;
+            Insert(l, x);
+            if Nodes[l].y > y then RotateRight(Root);
+        end else begin
+            r := Nodes[Root].r;
+            Insert(r, x);
+            if Nodes[r].y > y then RotateRight(Root);
+        end;
+    end;
+    {FixHeap(Root);}
 end;
 
 procedure th_init();
