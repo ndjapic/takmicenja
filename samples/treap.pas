@@ -174,36 +174,40 @@ end;
 
 procedure TSortedArray.Meld(var Root: PTreapNode);
 var
-    l, r: PTreapNode;
+    l, r, v: PTreapNode;
 begin
     if Root = SENTINEL then
     else begin
         l := Nodes[Root].l;
         r := Nodes[Root].r;
         if (r = SENTINEL) or (l <> SENTINEL) and (Nodes[l].y > Nodes[r].y) then begin
-            Root := l;
-            Nodes[l].r := r;
+            v := l;
             Meld(l);
+            Root := l;
+            Nodes[v].r := r;
         end else begin
-            Root := r;
-            Nodes[r].l := l;
+            v := r
             Meld(r);
+            Root := r;
+            Nodes[v].l := l;
         end;
     end;
 end;
 
 procedure TSortedArray.DeleteAt(var Root: PTreapNode; Index: SizeInt);
 var
-    l: PTreapNode;
+    l, r: PTreapNode;
 begin
     if Root <> SENTINEL then begin
         l := Nodes[Root].l;
+        r := Nodes[Root].r;
         if Index = Nodes[l].c then
             Meld(Root);
         else if Index < Nodes[l].c then
             DeleteAt(l, Index)
         else
-            DeleteAt(Nodes[Root].r, Index - 1 - Nodes[l].c);
+            DeleteAt(r, Index - 1 - Nodes[l].c);
+        Nodes[Root].c := Nodes[l].c + 1 + Nodes[r].c;
     end;
 end;
 
