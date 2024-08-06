@@ -27,6 +27,7 @@ type
         procedure RotateLeft(var Root: PTreapNode);
         procedure FixHeap(var Root: PTreapNode);
         procedure Insert(var Root: PTreapNode; x: _T);
+        function GetNode(Root: PTreapNode; Index: SizeInt): PTreapNode;
         function BisectRight(x: _T): PTreapNode;
         property Item: PTreapNode read GetItem;
     end;
@@ -117,11 +118,13 @@ end;
 procedure TSortedArray.Insert(var Root: PTreapNode; x: _T);
 var
     l, r: PTreapNode;
+    y: SizeInt;
 begin
     if Root = 0 then
         Root := NewNode(x)
     else begin
         Inc(Nodes[Root].c);
+        y := Nodes[Root].y;
         if x < Nodes[Root].x then begin
             l := Nodes[Root].l;
             Insert(l, x);
@@ -133,6 +136,23 @@ begin
         end;
     end;
     {FixHeap(Root);}
+end;
+
+function TSortedArray.GetNode(Root: PTreapNode; Index: SizeInt): PTreapNode;
+var
+    l: PTreapNode;
+begin
+    if Root = 0 then
+        Result := 0
+    else begin
+        l := Nodes[Root].l;
+        if Index = Nodes[l].c then
+            Result := Root;
+        else if Index < Nodes[l].c then
+            Result := GetNode(l, Index)
+        else
+            Result := GetNode(Nodes[Root].r, Index - 1 - Nodes[l].c);
+    end;
 end;
 
 procedure th_init();
