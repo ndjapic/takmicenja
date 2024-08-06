@@ -17,6 +17,8 @@ type
     end;
     TSortedArray<_T> = class
     private
+        const
+            SENTINEL = 0;
         Nodes: array of TNode;
         function GetItem(Index: SizeInt): PTreapNode;
     public
@@ -27,7 +29,7 @@ type
         procedure RotateLeft(var Root: PTreapNode);
         procedure FixHeap(var Root: PTreapNode);
         procedure Insert(var Root: PTreapNode; x: _T);
-        function GetNode(Root: PTreapNode; Index: SizeInt): PTreapNode;
+        function GetItem(Root: PTreapNode; Index: SizeInt): PTreapNode;
         function BisectRight(x: _T): PTreapNode;
         property Item: PTreapNode read GetItem;
     end;
@@ -54,7 +56,7 @@ begin
     Nodes[0].x := Low(_T);
     Nodes[0].y := High(SizeInt);
     Nodes[0].c := 0;
-    Nodes[0].r := 0;
+    Nodes[0].r := SENTINEL;
 end;
 
 destructor TSortedArray.Destroy();
@@ -67,14 +69,14 @@ function TSortedArray.NewNode(Key: Integer): PTreapNode;
 var
     c, root: PTreapNode;
 begin
-    Result := Nodes[0].c + 1;
+    Result := Nodes[SENTINEL].c + 1;
     if Length(Nodes) <= Result then SetLength(Nodes, Result * 2);
     Nodes[Result].x := x;
     Nodes[Result].y := Random(High(SizeInt)); // Generate random priority
     Nodes[Result].c := 1;
-    Nodes[Result].l := 0;
-    Nodes[Result].r := 0;
-    Nodes[0].c := Result;
+    Nodes[Result].l := SENTINEL;
+    Nodes[Result].r := SENTINEL;
+    Nodes[SENTINEL].c := Result;
 end;
 
 procedure TSortedArray.RotateRight(var Root: PTreapNode);
@@ -109,8 +111,8 @@ begin
     l := Nodes[Root].l;
     r := Nodes[Root].r;
     y := Nodes[Root].y;
-    if (l > 0) and (Nodes[l].y > y) then RotateRight(Root);
-    if (r > 0) and (Nodes[r].y > y) then RotateLeft(Root);
+    if (l <> SENTINEL) and (Nodes[l].y > y) then RotateRight(Root);
+    if (r <> SENTINEL) and (Nodes[r].y > y) then RotateLeft(Root);
     FixHeap(l);
     FixHeap(r);
 end;
@@ -138,20 +140,20 @@ begin
     {FixHeap(Root);}
 end;
 
-function TSortedArray.GetNode(Root: PTreapNode; Index: SizeInt): PTreapNode;
+function TSortedArray.GetItem(Root: PTreapNode; Index: SizeInt): PTreapNode;
 var
     l: PTreapNode;
 begin
-    if Root = 0 then
-        Result := 0
+    if Root = SENTINEL then
+        Result := SENTINEL
     else begin
         l := Nodes[Root].l;
         if Index = Nodes[l].c then
             Result := Root;
         else if Index < Nodes[l].c then
-            Result := GetNode(l, Index)
+            Result := GetItem(l, Index)
         else
-            Result := GetNode(Nodes[Root].r, Index - 1 - Nodes[l].c);
+            Result := GetItem(Nodes[Root].r, Index - 1 - Nodes[l].c);
     end;
 end;
 
