@@ -26,6 +26,7 @@ type
     public
         constructor Create();
         destructor Destroy(); override;
+        procedure Clear();
         function NewNode(x: _T): PTreapNode;
         procedure RotateRight(var Root, l: PTreapNode); inline;
         procedure RotateLeft(var Root, r: PTreapNode); inline;
@@ -95,6 +96,12 @@ destructor TSortedArray.Destroy();
 begin
     SetLength(Nodes, 0);
     inherited;
+end;
+
+destructor TSortedArray.Clear();
+begin
+    Nodes[SENTINEL].c := 0;
+    Nodes[SENTINEL].r := SENTINEL;
 end;
 
 function TSortedArray.NewNode(x: _T): PTreapNode;
