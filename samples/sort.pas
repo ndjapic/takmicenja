@@ -17,7 +17,8 @@ type
     public
         constructor create();
         destructor destroy(); override; // allows the use of a parent class destroyer
-        function isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean; inline;
+        function nonIncreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
+        function nonDecreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
         procedure MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
         procedure sort(cmp: _c; stable: boolean);
         function bisectr(x: _t; cmp: _c): sizeint;
@@ -64,13 +65,18 @@ begin
     inherited; // Also called parent class destroyer
 end;
 
-function tlist.isNonIncreasing(lend, rend: sizeint; cmp: _c): boolean; inline;
-var
-    j: sizeInt;
+function tlist.nonIncreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
 begin
-    j := lend + 1;
-    while (j < rend) and cmp.LessOrEqual(items[j], items[j-1]) do inc(j);
-    result := j >= rend;
+    result := lend + 1;
+    while (result < rend) and
+        cmp.LessOrEqual(items[result], items[result - 1]) do inc(result);
+end;
+
+function tlist.nonDecreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
+begin
+    result := lend + 1;
+    while (result < rend) and
+        cmp.LessOrEqual(items[result - 1], items[result]) do inc(result);
 end;
 
 procedure tlist.MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
@@ -78,42 +84,38 @@ var
     i, l, r, m: sizeint;
 
 begin
-    i := lend + 1;
-    while (i < rend) and cmp.LessOrEqual(items[i-1], items[i]) do inc(i);
+    i := nonDecreasingTo(lend, rend, cmp);
+    if i >= rend then
+    else if not stable and nonIncreasingTo(lend, rend, cmp) >= rend then begin
 
-    if i < rend then begin
+        l := lend;
+        r := rend - 1;
+        while l < r do begin
+            items2[l] := items[l];
+            items[l] := items[r];
+            items[r] := items2[l];
+            inc(l);
+            dec(r);
+        end;
 
-        if not stable and isNonIncreasing(lend, rend, cmp) then begin
+    end else begin
 
-            l := lend;
-            r := rend - 1;
-            while l < r do begin
-                items2[l] := items[l];
-                items[l] := items[r];
-                items[r] := items2[l];
+        m := (lend + rend) div 2;
+        if i < m then MergeSort(lend, m, cmp, stable);
+        MergeSort(m, rend, cmp, stable);
+
+        l := lend;
+        r := m;
+        for i := lend to rend - 1 do
+            if (r = rend) or (l < m) and cmp.LessOrEqual(items[l], items[r]) then begin
+                items2[i] := items[l];
                 inc(l);
-                dec(r);
+            end else begin
+                items2[i] := items[r];
+                inc(r);
             end;
 
-        end else begin
-
-            m := (lend + rend) div 2;
-            if i < m then MergeSort(lend, m, cmp, stable);
-            MergeSort(m, rend, cmp, stable);
-
-            l := lend;
-            r := m;
-            for i := lend to rend - 1 do
-                if (r = rend) or (l < m) and cmp.LessOrEqual(items[l], items[r]) then begin
-                    items2[i] := items[l];
-                    inc(l);
-                end else begin
-                    items2[i] := items[r];
-                    inc(r);
-                end;
-
-            for i := lend to rend - 1 do items[i] := items2[i];
-        end;
+        for i := lend to rend - 1 do items[i] := items2[i];
     end;
 end;
 
