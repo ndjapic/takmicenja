@@ -10,14 +10,15 @@ type
     end;
     generic tlist<_t, _c> = class
     private
+        i0: sizeint;
         fitems, items2: array of _t;
         count: sizeint;
         function getItem(index: SizeInt): _t;
         procedure setItem(index: SizeInt; item: _t);
     public
+        procedure clear();
         constructor create(n: sizeint);
         destructor destroy(); override; // allows the use of a parent class destroyer
-        procedure clear();
         function nonIncreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
         function nonDecreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
         procedure MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
@@ -42,20 +43,27 @@ end;
 
 function tlist.getItem(index: SizeInt): _t;
 begin
-    result := fitems[index];
+    result := fitems[index - i0];
 end;
 
 procedure tlist.setItem(index: SizeInt; item: _t);
 begin
+    dec(index, i0);
     if length(fitems) <= index then setlength(fitems, 2 * index);
     fitems[index] := item;
     count := max(count, index + 1);
 end;
 
-constructor tlist.create(n: sizeint);
+procedure tlist.clear();
 begin
-    setlength(fitems, max(1, n));
     count := 0;
+end;
+
+constructor tlist.create(l, r: sizeint);
+begin
+    setlength(fitems, max(1, r-l));
+    clear();
+    i0 := l;
 end;
 
 destructor tlist.destroy();
@@ -63,11 +71,6 @@ begin
     setlength(fitems, 0);
     setlength(items2, 0);
     inherited; // Also called parent class destroyer
-end;
-
-procedure tlist.clear();
-begin
-    count := 0;
 end;
 
 function tlist.nonIncreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
@@ -149,8 +152,8 @@ end;
 begin
     readln(n);
     cmp := icomparer.create(); // Initialize the object by calling the class builder
-    a := ilist.create();
-    p := ilist.create();
+    a := ilist.create(0, 0);
+    p := ilist.create(0, 0);
 
     for i := 0 to n-1 do begin
         read(x);
