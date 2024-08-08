@@ -172,5 +172,52 @@ type
     property Count: Integer read FCount;
   end;
 
+procedure Split(Root: PNode; K: Integer; var Left, Right: PNode);
+begin
+  if Root = nil then
+  begin
+    Left := nil;
+    Right := nil;
+    Exit;
+  end;
+  if Root^.LeftSize < K then
+  begin
+    Split(Root^.Right, K - Root^.LeftSize - 1, Root^.Right, Right);
+    Left := Root;
+  end else
+  begin
+    Split(Root^.Left, K, Left, Root^.Left);
+    Right := Root;
+  end;
+  Root^.LeftSize := Left^.Size;
+  Root^.RightSize := Right^.Size;
+  Root^.Size := Root^.LeftSize + Root^.RightSize + 1;
+end;
+
+procedure Merge(Left, Right: PNode; var Root: PNode);
+begin
+  if Left = nil then
+  begin
+    Root := Right;
+    Exit;
+  end;
+  if Right = nil then
+  begin
+    Root := Left;
+    Exit;
+  end;
+  if Left^.Priority > Right^.Priority then
+  begin
+    Root := Left;
+    Merge(Left^.Right, Right, Root^.Right);
+    Root^.Size := Root^.LeftSize + Root^.RightSize + 1;
+  end else
+  begin
+    Root := Right;
+    Merge(Left, Right^.Left, Root^.Left);
+    Root^.Size := Root^.LeftSize + Root^.RightSize + 1;
+  end;
+end;
+
 begin
 end.
