@@ -15,8 +15,9 @@ type
         function getItem(index: SizeInt): _t;
         procedure setItem(index: SizeInt; item: _t);
     public
-        constructor create();
+        constructor create(n: sizeint);
         destructor destroy(); override; // allows the use of a parent class destroyer
+        procedure clear();
         function nonIncreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
         function nonDecreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
         procedure MergeSort(lend, rend: sizeint; cmp: _c; stable: boolean);
@@ -51,9 +52,9 @@ begin
     count := max(count, index + 1);
 end;
 
-constructor tlist.create();
+constructor tlist.create(n: sizeint);
 begin
-    setlength(fitems, 1);
+    setlength(fitems, max(1, n));
     count := 0;
 end;
 
@@ -61,8 +62,12 @@ destructor tlist.destroy();
 begin
     setlength(fitems, 0);
     setlength(items2, 0);
-    count := 0;
     inherited; // Also called parent class destroyer
+end;
+
+procedure tlist.clear();
+begin
+    count := 0;
 end;
 
 function tlist.nonIncreasingTo(lend, rend: sizeint; cmp: _c): sizeint; inline;
