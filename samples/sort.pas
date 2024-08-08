@@ -13,8 +13,8 @@ type
         i0: sizeint;
         fitems, items2: array of _t;
         count: sizeint;
-        function getItem(index: SizeInt): _t;
-        procedure setItem(index: SizeInt; item: _t);
+        function getItem(index: SizeInt): _t; inline;
+        procedure setItem(index: SizeInt; item: _t); inline;
     public
         procedure clear();
         constructor create(n: sizeint);
@@ -41,12 +41,12 @@ begin
     result := a.items[lhs] <= a.items[rhs];
 end;
 
-function tlist.getItem(index: SizeInt): _t;
+function tlist.getItem(index: SizeInt): _t; inline;
 begin
     result := fitems[index - i0];
 end;
 
-procedure tlist.setItem(index: SizeInt; item: _t);
+procedure tlist.setItem(index: SizeInt; item: _t); inline;
 begin
     dec(index, i0);
     if length(fitems) <= index then setlength(fitems, 2 * index);
